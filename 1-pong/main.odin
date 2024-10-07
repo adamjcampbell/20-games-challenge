@@ -17,13 +17,24 @@ main :: proc() {
 
         rl.BeginDrawing()
 
-        // Draw black background
+        // Draw a black background
         rl.ClearBackground(rl.BLACK)
 
-        // Draw divider
-        divider_width: i32 = 10
-        divider_x := half_screen_width - divider_width / 2
-        rl.DrawRectangle(divider_x, 0, divider_width, screen_height, rl.WHITE)
+        // Draw the segmented divider
+        segments := 32
+        segment_width := 4
+        segment_length := int(screen_height) / (segments * 2)
+
+        // Loop drawing one segment of the line at a time
+        for i := 0; i <= segments; i += 1 {
+            x := f32(half_screen_width)
+            // start_y is iteration * length * 2 to account for negative space
+            start_y := f32(i) * f32(segment_length) * 2
+            end_y := start_y + f32(segment_length)
+            start_pos: rl.Vector2 = {x, start_y}
+            end_pos: rl.Vector2 = {x, end_y}
+            rl.DrawLineEx(start_pos, end_pos, f32(segment_width), rl.WHITE)
+        }
 
         // Draw scores
         zero_width := rl.MeasureText("0", 72)
