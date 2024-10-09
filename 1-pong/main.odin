@@ -13,7 +13,9 @@ main :: proc() {
     // Start the game loop
     for !rl.WindowShouldClose() {
         screen_height := rl.GetScreenHeight()
-        half_screen_width := rl.GetScreenWidth() / 2
+        screen_width := rl.GetScreenWidth()
+        half_screen_width := screen_width / 2
+        padding: i32 = 32
 
         rl.BeginDrawing()
 
@@ -40,8 +42,16 @@ main :: proc() {
         zero_width := rl.MeasureText("0", 72)
         left_score_x := half_screen_width / 2 - zero_width / 2
         right_score_x := half_screen_width + left_score_x
-        rl.DrawText("0", left_score_x, 0, 72, rl.WHITE)
-        rl.DrawText("0", right_score_x, 0, 72, rl.WHITE)
+        rl.DrawText("0", left_score_x, padding, 72, rl.WHITE)
+        rl.DrawText("0", right_score_x, padding, 72, rl.WHITE)
+
+        // Draw paddles
+        paddle_height: i32 = 64
+        paddle_y := screen_height / 2 - paddle_height / 2
+        left_paddle_x := padding
+        right_paddle_x := screen_width - padding
+        rl.DrawRectangle(left_paddle_x, paddle_y, 8, paddle_height, rl.WHITE)
+        rl.DrawRectangle(right_paddle_x, paddle_y, 8, paddle_height, rl.WHITE)
 
         rl.EndDrawing()
     }
