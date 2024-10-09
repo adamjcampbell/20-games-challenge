@@ -6,9 +6,16 @@ import rl "vendor:raylib"
 main :: proc() {
 
     // Initialise the raylib window
-    rl.InitWindow(1280, 720, "Pong")
+    rl.InitWindow(640, 480, "Pong")
     rl.SetTargetFPS(200)
     defer rl.CloseWindow()
+
+    // Game State
+    paddle_width: i32 = 8
+    paddle_height: i32 = 64
+    paddle_initial_y := rl.GetScreenHeight() / 2 - paddle_height / 2
+    paddle_left_y := paddle_initial_y
+    paddle_right_y := paddle_initial_y
 
     // Start the game loop
     for !rl.WindowShouldClose() {
@@ -46,12 +53,22 @@ main :: proc() {
         rl.DrawText("0", score_right_x, padding, 72, rl.WHITE)
 
         // Draw paddles
-        paddle_height: i32 = 64
-        paddle_y := screen_height / 2 - paddle_height / 2
         paddle_left_x := padding
         paddle_right_x := screen_width - padding
-        rl.DrawRectangle(paddle_left_x, paddle_y, 8, paddle_height, rl.WHITE)
-        rl.DrawRectangle(paddle_right_x, paddle_y, 8, paddle_height, rl.WHITE)
+        rl.DrawRectangle(
+            paddle_left_x,
+            paddle_left_y,
+            paddle_width,
+            paddle_height,
+            rl.WHITE,
+        )
+        rl.DrawRectangle(
+            paddle_right_x,
+            paddle_right_y,
+            paddle_width,
+            paddle_height,
+            rl.WHITE,
+        )
 
         rl.EndDrawing()
     }
