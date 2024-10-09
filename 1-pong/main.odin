@@ -10,19 +10,21 @@ main :: proc() {
     rl.SetTargetFPS(200)
     defer rl.CloseWindow()
 
+    padding: i32 = 32
+
     // Game State
-    paddle_width: i32 = 8
-    paddle_height: i32 = 64
-    paddle_initial_y := rl.GetScreenHeight() / 2 - paddle_height / 2
-    paddle_left_y := paddle_initial_y
-    paddle_right_y := paddle_initial_y
+    paddle_size := rl.Vector2{8, 64}
+    paddle_left_x := f32(padding)
+    paddle_right_x := f32(rl.GetScreenWidth() - padding)
+    paddle_initial_y: f32 = f32(rl.GetScreenHeight() / 2) - paddle_size.y / 2
+    paddle_left_position := rl.Vector2{paddle_left_x, paddle_initial_y}
+    paddle_right_position := rl.Vector2{paddle_right_x, paddle_initial_y}
 
     // Start the game loop
     for !rl.WindowShouldClose() {
         screen_height := rl.GetScreenHeight()
         screen_width := rl.GetScreenWidth()
         screen_width_halved := screen_width / 2
-        padding: i32 = 32
 
         rl.BeginDrawing()
 
@@ -53,40 +55,27 @@ main :: proc() {
         rl.DrawText("0", score_right_x, padding, 72, rl.WHITE)
 
         // Draw paddles
-        paddle_left_x := padding
-        paddle_right_x := screen_width - padding
-        rl.DrawRectangle(
-            paddle_left_x,
-            paddle_left_y,
-            paddle_width,
-            paddle_height,
-            rl.WHITE,
-        )
-        rl.DrawRectangle(
-            paddle_right_x,
-            paddle_right_y,
-            paddle_width,
-            paddle_height,
-            rl.WHITE,
-        )
+        rl.DrawRectangleV(paddle_left_position, paddle_size, rl.WHITE)
+        rl.DrawRectangleV(paddle_right_position, paddle_size, rl.WHITE)
 
-        paddle_speed: i32 = 1
+        paddle_velocity := 200
+        paddle_dv := f32(paddle_velocity) * rl.GetFrameTime()
 
         // Update paddle positions
         if rl.IsKeyDown(.W) {
-            paddle_left_y -= paddle_speed
+            paddle_left_position.y -= paddle_dv
         }
 
         if rl.IsKeyDown(.S) {
-            paddle_left_y += paddle_speed
+            paddle_left_position.y += paddle_dv
         }
 
         if rl.IsKeyDown(.UP) {
-            paddle_right_y -= paddle_speed
+            paddle_right_position.y -= paddle_dv
         }
 
         if rl.IsKeyDown(.DOWN) {
-            paddle_right_y += paddle_speed
+            paddle_right_position.y += paddle_dv
         }
 
         rl.EndDrawing()
