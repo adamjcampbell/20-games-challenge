@@ -70,6 +70,25 @@ main :: proc() {
             rl.WHITE,
         )
 
+        paddle_speed: i32 = 1
+
+        // Update paddle positions
+        if rl.IsKeyDown(.W) {
+            paddle_left_y -= paddle_speed
+        }
+
+        if rl.IsKeyDown(.S) {
+            paddle_left_y += paddle_speed
+        }
+
+        if rl.IsKeyDown(.UP) {
+            paddle_right_y -= paddle_speed
+        }
+
+        if rl.IsKeyDown(.DOWN) {
+            paddle_right_y += paddle_speed
+        }
+
         rl.EndDrawing()
     }
 
