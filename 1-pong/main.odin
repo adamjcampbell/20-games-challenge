@@ -2,6 +2,22 @@ package pong
 
 import rl "vendor:raylib"
 
+// Padding from the edge for drawn elements
+Padding: f32 : 32
+
+// A player movable paddle
+Paddle :: struct {
+    size:     rl.Vector2,
+    position: rl.Vector2,
+}
+
+// Creation of a padde at the desired x value centered vertically
+paddle :: proc(x: f32) -> Paddle {
+    size := rl.Vector2{8, 64}
+    y: f32 = f32(rl.GetScreenHeight() / 2) - size.y / 2
+    return {size, {x, y}}
+}
+
 main :: proc() {
 
     // Initialise the raylib window
@@ -9,15 +25,9 @@ main :: proc() {
     rl.SetTargetFPS(200)
     defer rl.CloseWindow()
 
-    padding: i32 = 32
-
     // Game State
-    paddle_size := rl.Vector2{8, 64}
-    paddle_left_x := f32(padding)
-    paddle_right_x := f32(rl.GetScreenWidth() - padding)
-    paddle_initial_y: f32 = f32(rl.GetScreenHeight() / 2) - paddle_size.y / 2
-    paddle_left_position := rl.Vector2{paddle_left_x, paddle_initial_y}
-    paddle_right_position := rl.Vector2{paddle_right_x, paddle_initial_y}
+    paddle_left := paddle(x = Padding)
+    paddle_right := paddle(x = f32(rl.GetScreenWidth()) - Padding)
 
     // Start the game loop
     for !rl.WindowShouldClose() {
@@ -50,46 +60,46 @@ main :: proc() {
         zero_width := rl.MeasureText("0", 72)
         score_left_x := screen_width_halved / 2 - zero_width / 2
         score_right_x := screen_width_halved + score_left_x
-        rl.DrawText("0", score_left_x, padding, 72, rl.WHITE)
-        rl.DrawText("0", score_right_x, padding, 72, rl.WHITE)
+        rl.DrawText("0", score_left_x, i32(Padding), 72, rl.WHITE)
+        rl.DrawText("0", score_right_x, i32(Padding), 72, rl.WHITE)
 
         // Draw paddles
-        rl.DrawRectangleV(paddle_left_position, paddle_size, rl.WHITE)
-        rl.DrawRectangleV(paddle_right_position, paddle_size, rl.WHITE)
+        rl.DrawRectangleV(paddle_left.position, paddle_left.size, rl.WHITE)
+        rl.DrawRectangleV(paddle_right.position, paddle_right.size, rl.WHITE)
 
         paddle_velocity := 200
         paddle_dv := f32(paddle_velocity) * rl.GetFrameTime()
 
         // Update paddle positions
         if rl.IsKeyDown(.W) {
-            paddle_left_position.y = clamp(
-                paddle_left_position.y - paddle_dv,
+            paddle_left.position.y = clamp(
+                paddle_left.position.y - paddle_dv,
                 0,
-                f32(screen_height) - paddle_size.y,
+                f32(screen_height) - paddle_left.size.y,
             )
         }
 
         if rl.IsKeyDown(.S) {
-            paddle_left_position.y = clamp(
-                paddle_left_position.y + paddle_dv,
+            paddle_left.position.y = clamp(
+                paddle_left.position.y + paddle_dv,
                 0,
-                f32(screen_height) - paddle_size.y,
+                f32(screen_height) - paddle_left.size.y,
             )
         }
 
         if rl.IsKeyDown(.UP) {
-            paddle_right_position.y = clamp(
-                paddle_right_position.y - paddle_dv,
+            paddle_right.position.y = clamp(
+                paddle_right.position.y - paddle_dv,
                 0,
-                f32(screen_height) - paddle_size.y,
+                f32(screen_height) - paddle_right.size.y,
             )
         }
 
         if rl.IsKeyDown(.DOWN) {
-            paddle_right_position.y = clamp(
-                paddle_right_position.y + paddle_dv,
+            paddle_right.position.y = clamp(
+                paddle_right.position.y + paddle_dv,
                 0,
-                f32(screen_height) - paddle_size.y,
+                f32(screen_height) - paddle_right.size.y,
             )
         }
 
