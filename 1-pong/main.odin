@@ -1,6 +1,5 @@
 package pong
 
-import "core:fmt"
 import rl "vendor:raylib"
 
 main :: proc() {
@@ -63,19 +62,35 @@ main :: proc() {
 
         // Update paddle positions
         if rl.IsKeyDown(.W) {
-            paddle_left_position.y -= paddle_dv
+            paddle_left_position.y = clamp(
+                paddle_left_position.y - paddle_dv,
+                0,
+                f32(screen_height) - paddle_size.y,
+            )
         }
 
         if rl.IsKeyDown(.S) {
-            paddle_left_position.y += paddle_dv
+            paddle_left_position.y = clamp(
+                paddle_left_position.y + paddle_dv,
+                0,
+                f32(screen_height) - paddle_size.y,
+            )
         }
 
         if rl.IsKeyDown(.UP) {
-            paddle_right_position.y -= paddle_dv
+            paddle_right_position.y = clamp(
+                paddle_right_position.y - paddle_dv,
+                0,
+                f32(screen_height) - paddle_size.y,
+            )
         }
 
         if rl.IsKeyDown(.DOWN) {
-            paddle_right_position.y += paddle_dv
+            paddle_right_position.y = clamp(
+                paddle_right_position.y + paddle_dv,
+                0,
+                f32(screen_height) - paddle_size.y,
+            )
         }
 
         rl.EndDrawing()
