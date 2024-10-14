@@ -5,6 +5,9 @@ import rl "vendor:raylib"
 // Padding from the edge for drawn elements
 Padding: f32 : 32
 
+// Paddle movement velocity
+PaddleVelocity :: 200
+
 // A player movable paddle
 Paddle :: struct {
     size:     rl.Vector2,
@@ -16,6 +19,30 @@ paddle :: proc(x: f32) -> Paddle {
     size := rl.Vector2{8, 64}
     y: f32 = f32(rl.GetScreenHeight() / 2) - size.y / 2
     return {size, {x, y}}
+}
+
+update_paddle :: proc(
+    up: rl.KeyboardKey,
+    down: rl.KeyboardKey,
+    paddle: ^Paddle,
+) {
+    paddle_dv := f32(PaddleVelocity) * rl.GetFrameTime()
+
+    if rl.IsKeyDown(up) {
+        paddle.position.y = clamp(
+            paddle.position.y - paddle_dv,
+            0,
+            f32(rl.GetScreenHeight()) - paddle.size.y,
+        )
+    }
+
+    if rl.IsKeyDown(down) {
+        paddle.position.y = clamp(
+            paddle.position.y + paddle_dv,
+            0,
+            f32(rl.GetScreenHeight()) - paddle.size.y,
+        )
+    }
 }
 
 main :: proc() {
@@ -67,41 +94,9 @@ main :: proc() {
         rl.DrawRectangleV(paddle_left.position, paddle_left.size, rl.WHITE)
         rl.DrawRectangleV(paddle_right.position, paddle_right.size, rl.WHITE)
 
-        paddle_velocity := 200
-        paddle_dv := f32(paddle_velocity) * rl.GetFrameTime()
-
         // Update paddle positions
-        if rl.IsKeyDown(.W) {
-            paddle_left.position.y = clamp(
-                paddle_left.position.y - paddle_dv,
-                0,
-                f32(screen_height) - paddle_left.size.y,
-            )
-        }
-
-        if rl.IsKeyDown(.S) {
-            paddle_left.position.y = clamp(
-                paddle_left.position.y + paddle_dv,
-                0,
-                f32(screen_height) - paddle_left.size.y,
-            )
-        }
-
-        if rl.IsKeyDown(.UP) {
-            paddle_right.position.y = clamp(
-                paddle_right.position.y - paddle_dv,
-                0,
-                f32(screen_height) - paddle_right.size.y,
-            )
-        }
-
-        if rl.IsKeyDown(.DOWN) {
-            paddle_right.position.y = clamp(
-                paddle_right.position.y + paddle_dv,
-                0,
-                f32(screen_height) - paddle_right.size.y,
-            )
-        }
+        update_paddle(up = .W, down = .S, paddle = &paddle_left)
+        update_paddle(up = .UP, down = .DOWN, paddle = &paddle_right)
 
         rl.EndDrawing()
     }
