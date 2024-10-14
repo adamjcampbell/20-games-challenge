@@ -1,6 +1,6 @@
 Pong was the first widely successful arcade game. It was released in 1972, and started the first arcade boom. The game may seem simple today, but it was designed directly in hardware. Essentially, Pong was a specialized computer designed to bounce a ball between two paddles and keep score.
 
-### Goals:  
+### Goals:
 - [x] Create an arena with two walls and a divider.
 - [x] Add a paddle on either end of the play field. Use player inputs to move the paddles up and down.
 - [ ] Add a ball that moves around the playfield and bounces off of the paddles and walls.  

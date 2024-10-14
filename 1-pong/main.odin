@@ -15,7 +15,7 @@ Paddle :: struct {
 }
 
 // Creation of a padde at the desired x value centered vertically
-paddle :: proc(x: f32) -> Paddle {
+init_paddle :: proc(x: f32) -> Paddle {
     size := rl.Vector2{8, 64}
     y: f32 = f32(rl.GetScreenHeight() / 2) - size.y / 2
     return {size, {x, y}}
@@ -53,8 +53,15 @@ main :: proc() {
     defer rl.CloseWindow()
 
     // Game State
-    paddle_left := paddle(x = Padding)
-    paddle_right := paddle(x = f32(rl.GetScreenWidth()) - Padding)
+    paddle_left := init_paddle(x = Padding)
+    paddle_right := init_paddle(x = f32(rl.GetScreenWidth()) - Padding)
+    ball_width: f32 = 8
+    ball := rl.Rectangle {
+        f32(rl.GetScreenWidth() / 2) - (ball_width / 2),
+        f32(rl.GetScreenHeight() / 2) - (ball_width / 2),
+        ball_width,
+        ball_width,
+    }
 
     // Start the game loop
     for !rl.WindowShouldClose() {
@@ -94,11 +101,18 @@ main :: proc() {
         rl.DrawRectangleV(paddle_left.position, paddle_left.size, rl.WHITE)
         rl.DrawRectangleV(paddle_right.position, paddle_right.size, rl.WHITE)
 
-        // Update paddle positions
-        update_paddle(up = .W, down = .S, paddle = &paddle_left)
-        update_paddle(up = .UP, down = .DOWN, paddle = &paddle_right)
+        // Draw ball
+        rl.DrawRectangleRec(ball, rl.WHITE)
 
         rl.EndDrawing()
+
+        // Update paddle positions
+        update_paddle(.W, .S, &paddle_left)
+        update_paddle(.UP, .DOWN, &paddle_right)
+
+        // Update ball position
+        ball_dv := f32(PaddleVelocity) * rl.GetFrameTime()
+        ball.x -= ball_dv
     }
 
 }
