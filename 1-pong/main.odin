@@ -76,7 +76,7 @@ main :: proc() {
         rl.ClearBackground(rl.BLACK)
 
         // Draw the segmented divider
-        segment_count := 32
+        segment_count := 30
         segment_width := 4
         segment_length := int(screen_height) / (segment_count * 2)
 
