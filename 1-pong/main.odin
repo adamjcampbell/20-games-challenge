@@ -18,6 +18,12 @@ init_paddle :: proc(x: f32) -> Paddle {
     return {x, y, 8, height}
 }
 
+// The ball!
+Ball :: struct {
+    rectangle: rl.Rectangle,
+    direction: rl.Vector2,
+}
+
 update_paddle :: proc(
     up: rl.KeyboardKey,
     down: rl.KeyboardKey,
@@ -54,11 +60,14 @@ main :: proc() {
     paddle_right := init_paddle(x = f32(rl.GetScreenWidth()) - Padding)
     ball_going_left := true
     ball_width: f32 = 8
-    ball := rl.Rectangle {
-        f32(rl.GetScreenWidth() / 2) - (ball_width / 2),
-        f32(rl.GetScreenHeight() / 2) - (ball_width / 2),
-        ball_width,
-        ball_width,
+    ball := Ball {
+        {
+            f32(rl.GetScreenWidth() / 2) - (ball_width / 2),
+            f32(rl.GetScreenHeight() / 2) - (ball_width / 2),
+            ball_width,
+            ball_width,
+        },
+        {1, -1},
     }
 
     // Start the game loop
@@ -100,7 +109,7 @@ main :: proc() {
         rl.DrawRectangleRec(paddle_right, rl.WHITE)
 
         // Draw ball
-        rl.DrawRectangleRec(ball, rl.WHITE)
+        rl.DrawRectangleRec(ball.rectangle, rl.WHITE)
 
         rl.EndDrawing()
 
@@ -111,20 +120,20 @@ main :: proc() {
         // Update ball position
         ball_dv := f32(PaddleVelocity) * rl.GetFrameTime()
         if ball_going_left {
-            ball.x -= ball_dv
+            ball.rectangle.x -= ball_dv
         } else {
-            ball.x += ball_dv
+            ball.rectangle.x += ball_dv
         }
 
         if rl.CheckCollisionRecs(
-            ball,
+            ball.rectangle,
             paddle_left,
         ) {
             ball_going_left = false
         }
 
         if rl.CheckCollisionRecs(
-            ball,
+            ball.rectangle,
             paddle_right,
         ) {
             ball_going_left = true
