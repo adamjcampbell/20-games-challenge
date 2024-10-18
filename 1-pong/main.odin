@@ -1,5 +1,6 @@
 package pong
 
+import "core:fmt"
 import rl "vendor:raylib"
 
 // Padding from the edge for drawn elements
@@ -22,6 +23,19 @@ init_paddle :: proc(x: f32) -> Paddle {
 Ball :: struct {
     rectangle: rl.Rectangle,
     direction: rl.Vector2,
+}
+
+init_ball :: proc() -> Ball {
+    ball_width: f32 = 8
+    return {
+        {
+            f32(rl.GetScreenWidth() / 2) - (ball_width / 2),
+            f32(rl.GetScreenHeight() / 2) - (ball_width / 2),
+            ball_width,
+            ball_width,
+        },
+        {1, -1},
+    }
 }
 
 update_paddle :: proc(
@@ -56,18 +70,11 @@ main :: proc() {
     defer rl.CloseWindow()
 
     // Game State
+    score_left := 0
+    score_right := 0
     paddle_left := init_paddle(x = Padding)
     paddle_right := init_paddle(x = f32(rl.GetScreenWidth()) - Padding)
-    ball_width: f32 = 8
-    ball := Ball {
-        {
-            f32(rl.GetScreenWidth() / 2) - (ball_width / 2),
-            f32(rl.GetScreenHeight() / 2) - (ball_width / 2),
-            ball_width,
-            ball_width,
-        },
-        {1, -1},
-    }
+    ball := init_ball()
 
     // Start the game loop
     for !rl.WindowShouldClose() {
@@ -97,11 +104,22 @@ main :: proc() {
         }
 
         // Draw scores
-        zero_width := rl.MeasureText("0", 72)
-        score_left_x := screen_width_halved / 2 - zero_width / 2
-        score_right_x := screen_width_halved + score_left_x
-        rl.DrawText("0", score_left_x, i32(Padding), 72, rl.WHITE)
-        rl.DrawText("0", score_right_x, i32(Padding), 72, rl.WHITE)
+        {
+            font_size: i32 = 72
+            padding := i32(Padding)
+
+            lstring := fmt.ctprintf("%v", score_left)
+            rstring := fmt.ctprintf("%v", score_right)
+
+            lwidth := rl.MeasureText(lstring, font_size)
+            rwidth := rl.MeasureText(rstring, font_size)
+
+            lx := screen_width / 4 - lwidth / 2
+            rx := 3 * (screen_width / 4) - rwidth / 2
+
+            rl.DrawText(lstring, lx, padding, font_size, rl.WHITE)
+            rl.DrawText(rstring, rx, padding, font_size, rl.WHITE)
+        }
 
         // Draw paddles
         rl.DrawRectangleRec(paddle_left, rl.WHITE)
@@ -118,10 +136,19 @@ main :: proc() {
 
         // Update ball position
         ball_dv := f32(PaddleVelocity) * rl.GetFrameTime()
+        ball_max_x := f32(screen_width) - ball.rectangle.width
         ball_max_y := f32(screen_height) - ball.rectangle.height
 
         ball.rectangle.x += ball.direction.x * ball_dv
         ball.rectangle.y += ball.direction.y * ball_dv
+
+        if ball.rectangle.x <= 0 {
+            score_right += 1
+            ball = init_ball()
+        } else if ball.rectangle.x >= ball_max_x {
+            score_left += 1
+            ball = init_ball()
+        }
 
         if ball.rectangle.y <= 0 {
             ball.direction.y = 1
