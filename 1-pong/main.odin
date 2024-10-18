@@ -9,16 +9,13 @@ Padding: f32 : 32
 PaddleVelocity :: 200
 
 // A player movable paddle
-Paddle :: struct {
-    size:     rl.Vector2,
-    position: rl.Vector2,
-}
+Paddle :: rl.Rectangle
 
 // Creation of a padde at the desired x value centered vertically
 init_paddle :: proc(x: f32) -> Paddle {
-    size := rl.Vector2{8, 64}
-    y: f32 = f32(rl.GetScreenHeight() / 2) - size.y / 2
-    return {size, {x, y}}
+    height: f32 = 64
+    y: f32 = f32(rl.GetScreenHeight() / 2) - height / 2
+    return {x, y, 8, height}
 }
 
 update_paddle :: proc(
@@ -29,18 +26,18 @@ update_paddle :: proc(
     paddle_dv := f32(PaddleVelocity) * rl.GetFrameTime()
 
     if rl.IsKeyDown(up) {
-        paddle.position.y = clamp(
-            paddle.position.y - paddle_dv,
+        paddle.y = clamp(
+            paddle.y - paddle_dv,
             0,
-            f32(rl.GetScreenHeight()) - paddle.size.y,
+            f32(rl.GetScreenHeight()) - paddle.height,
         )
     }
 
     if rl.IsKeyDown(down) {
-        paddle.position.y = clamp(
-            paddle.position.y + paddle_dv,
+        paddle.y = clamp(
+            paddle.y + paddle_dv,
             0,
-            f32(rl.GetScreenHeight()) - paddle.size.y,
+            f32(rl.GetScreenHeight()) - paddle.height,
         )
     }
 }
@@ -99,8 +96,8 @@ main :: proc() {
         rl.DrawText("0", score_right_x, i32(Padding), 72, rl.WHITE)
 
         // Draw paddles
-        rl.DrawRectangleV(paddle_left.position, paddle_left.size, rl.WHITE)
-        rl.DrawRectangleV(paddle_right.position, paddle_right.size, rl.WHITE)
+        rl.DrawRectangleRec(paddle_left, rl.WHITE)
+        rl.DrawRectangleRec(paddle_right, rl.WHITE)
 
         // Draw ball
         rl.DrawRectangleRec(ball, rl.WHITE)
@@ -121,24 +118,14 @@ main :: proc() {
 
         if rl.CheckCollisionRecs(
             ball,
-            {
-                paddle_left.position.x,
-                paddle_left.position.y,
-                paddle_left.size.x,
-                paddle_left.size.y,
-            },
+            paddle_left,
         ) {
             ball_going_left = false
         }
 
         if rl.CheckCollisionRecs(
             ball,
-            {
-                paddle_right.position.x,
-                paddle_right.position.y,
-                paddle_right.size.x,
-                paddle_right.size.y,
-            },
+            paddle_right,
         ) {
             ball_going_left = true
         }
