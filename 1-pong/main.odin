@@ -58,7 +58,6 @@ main :: proc() {
     // Game State
     paddle_left := init_paddle(x = Padding)
     paddle_right := init_paddle(x = f32(rl.GetScreenWidth()) - Padding)
-    ball_going_left := true
     ball_width: f32 = 8
     ball := Ball {
         {
@@ -119,24 +118,20 @@ main :: proc() {
 
         // Update ball position
         ball_dv := f32(PaddleVelocity) * rl.GetFrameTime()
-        if ball_going_left {
-            ball.rectangle.x -= ball_dv
-        } else {
-            ball.rectangle.x += ball_dv
+        ball_max_y := f32(screen_height) - ball.rectangle.height
+
+        ball.rectangle.x += ball.direction.x * ball_dv
+        ball.rectangle.y += ball.direction.y * ball_dv
+
+        if ball.rectangle.y <= 0 {
+            ball.direction.y = 1
+        } else if ball.rectangle.y >= ball_max_y {
+            ball.direction.y = -1
         }
 
-        if rl.CheckCollisionRecs(
-            ball.rectangle,
-            paddle_left,
-        ) {
-            ball_going_left = false
-        }
-
-        if rl.CheckCollisionRecs(
-            ball.rectangle,
-            paddle_right,
-        ) {
-            ball_going_left = true
+        if rl.CheckCollisionRecs(ball.rectangle, paddle_left) ||
+            rl.CheckCollisionRecs(ball.rectangle, paddle_right) {
+            ball.direction.x = -ball.direction.x
         }
     }
 
