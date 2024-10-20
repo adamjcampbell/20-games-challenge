@@ -69,6 +69,13 @@ main :: proc() {
     rl.SetTargetFPS(200)
     defer rl.CloseWindow()
 
+    // Load sound
+    rl.InitAudioDevice()
+    wall_sound := rl.LoadSound("wall.mp3")
+    paddle_sound := rl.LoadSound("paddle.mp3")
+    score_sound := rl.LoadSound("score.mp3")
+    defer rl.CloseAudioDevice()
+
     // Game State
     score_left := 0
     score_right := 0
@@ -149,21 +156,26 @@ main :: proc() {
                 ball.rectangle.y += ball.direction.y * dv
 
                 if ball.rectangle.x <= 0 {
+                    rl.PlaySound(score_sound)
                     score_right += 1
                     ball = init_ball()
                 } else if ball.rectangle.x >= max_x {
+                    rl.PlaySound(score_sound)
                     score_left += 1
                     ball = init_ball()
                 }
 
                 if ball.rectangle.y <= 0 {
+                    rl.PlaySound(wall_sound)
                     ball.direction.y = 1
                 } else if ball.rectangle.y >= max_y {
+                    rl.PlaySound(wall_sound)
                     ball.direction.y = -1
                 }
 
                 if rl.CheckCollisionRecs(ball.rectangle, paddle_left) ||
-                    rl.CheckCollisionRecs(ball.rectangle, paddle_right) {
+                   rl.CheckCollisionRecs(ball.rectangle, paddle_right) {
+                    rl.PlaySound(paddle_sound)
                     ball.direction.x = -ball.direction.x
                 }
             }
