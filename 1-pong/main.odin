@@ -165,12 +165,9 @@ main :: proc() {
                     ball = init_ball()
                 }
 
-                if ball.rectangle.y <= 0 {
+                if ball.rectangle.y <= 0 || ball.rectangle.y >= max_y {
                     rl.PlaySound(wall_sound)
-                    ball.direction.y = 1
-                } else if ball.rectangle.y >= max_y {
-                    rl.PlaySound(wall_sound)
-                    ball.direction.y = -1
+                    ball.direction.y = -ball.direction.y
                 }
 
                 if rl.CheckCollisionRecs(ball.rectangle, paddle_left) ||
