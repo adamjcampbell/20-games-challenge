@@ -112,6 +112,7 @@ main :: proc() {
 
                 if ball.rectangle.y <= 0 || ball.rectangle.y >= max_y {
                     rl.PlaySound(wall_sound)
+                    ball.rectangle.y = clamp(ball.rectangle.y, 0, max_y)
                     ball.direction.y = -ball.direction.y
                 }
 
@@ -138,7 +139,6 @@ main :: proc() {
                     ball.rectangle.x = collision_rec.x + collision_rec.width
                     ball.direction.x = -math.cos_f32(angle)
                     ball.direction.y = -math.sin_f32(angle)
-                    fmt.printfln("%v", ball.direction)
                 } else if right_collide {
                     collision_rec := rl.GetCollisionRec(
                         ball.rectangle,
@@ -153,7 +153,6 @@ main :: proc() {
                     ball.rectangle.x = collision_rec.x - ball.rectangle.width
                     ball.direction.x = math.cos_f32(angle)
                     ball.direction.y = -math.sin_f32(angle)
-                    fmt.printfln("%v", ball.direction)
                 }
 
                 ball.rectangle.x += ball.direction.x * dv
