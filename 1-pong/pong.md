@@ -13,3 +13,7 @@ Hint: Following the ball with a paddle is easy, but it makes the opponent imposs
 - [ ] Add a menu and allow the player to reset the game.
 - [ ] Add some basic sounds. Play a sound every time the ball collides with something, and every time a player scores.
 
+### Custom goals:
+- [ ] Implement more acurate bounce math
+- [ ] Move to checking if there will be collision on the next frame
+

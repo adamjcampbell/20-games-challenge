@@ -26,6 +26,7 @@ init_paddle :: proc(x: f32) -> Paddle {
 Ball :: struct {
     rectangle: rl.Rectangle,
     direction: rl.Vector2,
+    velocity:  f32,
 }
 
 init_ball :: proc() -> Ball {
@@ -38,6 +39,7 @@ init_ball :: proc() -> Ball {
             ball_width,
         },
         {1, -1},
+        0.5,
     }
 }
 
@@ -96,7 +98,6 @@ main :: proc() {
 
             // Update ball & scores
             {
-                dv := f32(Velocity) * rl.GetFrameTime()
                 max_x := f32(rl.GetScreenWidth()) - ball.rectangle.width
                 max_y := f32(rl.GetScreenHeight()) - ball.rectangle.height
 
@@ -126,6 +127,7 @@ main :: proc() {
                 )
 
                 if left_collide {
+                    fmt.printfln("Left Collide")
                     collision_rec := rl.GetCollisionRec(
                         ball.rectangle,
                         paddle_left,
@@ -135,11 +137,13 @@ main :: proc() {
                         (collision_rec.y + collision_rec.height / 2)
                     normalized_relative_y :=
                         relative_y / (paddle_left.height / 2)
+                    ball.velocity = normalized_relative_y
                     angle := normalized_relative_y * MaxBounceAngle
-                    ball.rectangle.x = collision_rec.x + collision_rec.width
+                    ball.rectangle.x = paddle_left.x + paddle_left.width
                     ball.direction.x = -math.cos_f32(angle)
                     ball.direction.y = -math.sin_f32(angle)
                 } else if right_collide {
+                    fmt.printfln("Right Collide")
                     collision_rec := rl.GetCollisionRec(
                         ball.rectangle,
                         paddle_right,
@@ -149,12 +153,14 @@ main :: proc() {
                         (collision_rec.y + collision_rec.height / 2)
                     normalized_relative_y :=
                         relative_y / (paddle_right.height / 2)
+                    ball.velocity = normalized_relative_y
                     angle := normalized_relative_y * MaxBounceAngle
-                    ball.rectangle.x = collision_rec.x - ball.rectangle.width
+                    ball.rectangle.x = paddle_right.x - ball.rectangle.width
                     ball.direction.x = math.cos_f32(angle)
                     ball.direction.y = -math.sin_f32(angle)
                 }
 
+                dv := (600 * ball.velocity) * rl.GetFrameTime()
                 ball.rectangle.x += ball.direction.x * dv
                 ball.rectangle.y += ball.direction.y * dv
             }
