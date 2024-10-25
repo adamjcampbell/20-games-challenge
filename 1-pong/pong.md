@@ -17,3 +17,14 @@ Hint: Following the ball with a paddle is easy, but it makes the opponent imposs
 - [ ] Implement more acurate bounce math
 - [ ] Move to checking if there will be collision on the next frame
 
+### Notes:
+Need to modify the game loop to:
+- First update and then draw
+- Predict the collision the frame before to prevent penetration?
+
+From reddit:
+(0) user controls etc...
+(1) ball is moving
+(2) collision detection starts + ball intersects somewhere
+(3) position of ball is reset back to the intersection point
+(4) render
