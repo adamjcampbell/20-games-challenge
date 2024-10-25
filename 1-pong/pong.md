@@ -28,3 +28,9 @@ From reddit:
 (2) collision detection starts + ball intersects somewhere
 (3) position of ball is reset back to the intersection point
 (4) render
+
+What the fuck I call things:
+- Acceleration is constant
+- There is no velocity?
+- Speed is movement along a path
+- Difference in position is called dp

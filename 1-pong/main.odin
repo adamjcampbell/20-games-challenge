@@ -8,7 +8,7 @@ import rl "vendor:raylib"
 Padding: f32 : 32
 
 // Movement velocity
-Velocity :: 200
+BaseSpeed :: 200
 
 MaxBounceAngle :: (math.PI / 180) * 75
 
@@ -27,9 +27,9 @@ init_paddle :: proc(x: f32) -> Paddle {
 
 // The ball containing a draw rect and normalised direction vector
 Ball :: struct {
-    rectangle: rl.Rectangle,
-    direction: rl.Vector2,
-    velocity:  f32,
+    position:     rl.Rectangle,
+    direction:    rl.Vector2,
+    speed_factor: f32,
 }
 
 init_ball :: proc() -> Ball {
@@ -51,11 +51,11 @@ update_paddle :: proc(
     up: rl.KeyboardKey,
     down: rl.KeyboardKey,
 ) {
-    paddle_dv := f32(Velocity) * rl.GetFrameTime()
+    paddle_dp := f32(BaseSpeed) * rl.GetFrameTime()
 
     if rl.IsKeyDown(up) {
         paddle.y = clamp(
-            paddle.y - paddle_dv,
+            paddle.y - paddle_dp,
             0,
             f32(rl.GetScreenHeight()) - paddle.height,
         )
@@ -63,7 +63,7 @@ update_paddle :: proc(
 
     if rl.IsKeyDown(down) {
         paddle.y = clamp(
-            paddle.y + paddle_dv,
+            paddle.y + paddle_dp,
             0,
             f32(rl.GetScreenHeight()) - paddle.height,
         )
@@ -72,7 +72,7 @@ update_paddle :: proc(
 
 update_ball :: proc(ball: ^Ball, paddle: Paddle) {
     zero_rec := rl.Rectangle{}
-    collision := rl.GetCollisionRec(ball.rectangle, paddle)
+    collision := rl.GetCollisionRec(ball.position, paddle)
     // Check for collision
     if collision == zero_rec {
         return
@@ -92,14 +92,18 @@ update_ball :: proc(ball: ^Ball, paddle: Paddle) {
         -math.sin_f32(bounce_angle),
     }
     fmt.printfln("direction: %v", direction)
+
+    // Update ball speed factor
+    ball.speed_factor = abs(normalised_y)
+
     // Correctly update position and direction depending on paddle
     switch paddle {
     case paddle_left:
         ball.direction = direction
-        ball.rectangle.x = paddle.x + paddle.width
+        ball.position.x = paddle.x + paddle.width
     case paddle_right:
         ball.direction = -direction
-        ball.rectangle.x = paddle.x - ball.rectangle.width
+        ball.position.x = paddle.x - ball.position.width
     }
 }
 
@@ -134,41 +138,33 @@ main :: proc() {
 
             // Update ball & scores
             {
-                max_x := f32(rl.GetScreenWidth()) - ball.rectangle.width
-                max_y := f32(rl.GetScreenHeight()) - ball.rectangle.height
+                max_x := f32(rl.GetScreenWidth()) - ball.position.width
+                max_y := f32(rl.GetScreenHeight()) - ball.position.height
 
-                if ball.rectangle.x <= 0 {
+                if ball.position.x <= 0 {
                     rl.PlaySound(score_sound)
                     score_right += 1
                     ball = init_ball()
-                } else if ball.rectangle.x >= max_x {
+                } else if ball.position.x >= max_x {
                     rl.PlaySound(score_sound)
                     score_left += 1
                     ball = init_ball()
                 }
 
-                if ball.rectangle.y <= 0 || ball.rectangle.y >= max_y {
+                if ball.position.y <= 0 || ball.position.y >= max_y {
                     rl.PlaySound(wall_sound)
-                    ball.rectangle.y = clamp(ball.rectangle.y, 0, max_y)
+                    ball.position.y = clamp(ball.position.y, 0, max_y)
                     ball.direction.y = -ball.direction.y
                 }
-
-                zero_rectangle := rl.Rectangle{}
-                left_collision := rl.GetCollisionRec(
-                    ball.rectangle,
-                    paddle_left,
-                )
-                right_collision := rl.GetCollisionRec(
-                    ball.rectangle,
-                    paddle_right,
-                )
 
                 update_ball(&ball, paddle_left)
                 update_ball(&ball, paddle_right)
 
-                dv := (600 * ball.velocity) * rl.GetFrameTime()
-                ball.rectangle.x += ball.direction.x * dv
-                ball.rectangle.y += ball.direction.y * dv
+                dp :=
+                    (BaseSpeed + (BaseSpeed * ball.speed_factor)) *
+                    rl.GetFrameTime()
+                ball.position.x += ball.direction.x * dp
+                ball.position.y += ball.direction.y * dp
             }
         }
 
@@ -222,7 +218,7 @@ main :: proc() {
             rl.DrawRectangleRec(paddle_right, rl.WHITE)
 
             // Draw ball
-            rl.DrawRectangleRec(ball.rectangle, rl.WHITE)
+            rl.DrawRectangleRec(ball.position, rl.WHITE)
 
             rl.EndDrawing()
         }
