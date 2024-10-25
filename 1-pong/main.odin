@@ -70,32 +70,37 @@ update_paddle :: proc(
     }
 }
 
-update_ball :: proc(ball: ^Ball, paddle: Paddle) {
-    zero_rec := rl.Rectangle{}
-    collision := rl.GetCollisionRec(ball.position, paddle)
-    // Check for collision
-    if collision == zero_rec {
+update_ball :: proc(ball: ^Ball) {
+    paddle: Paddle
+    collision: rl.Rectangle
+
+    collision_zero := rl.Rectangle{}
+    collision_left := rl.GetCollisionRec(ball.position, paddle_left)
+    collision_right := rl.GetCollisionRec(ball.position, paddle_right)
+
+    if collision_left != collision_zero {
+        collision = collision_left
+        paddle = paddle_left
+    } else if collision_right != collision_zero {
+        collision = collision_right
+        paddle = paddle_right
+    } else {
         return
     }
+
     // Get relative y intersection -32 to 32
     relative_y := paddle.y + paddle.height / 2 - collision.y
-    fmt.printfln("relative_y: %v", relative_y)
     // Normalize the relative y to get -1 to 1
     normalised_y := relative_y / (paddle.height / 2)
-    fmt.printfln("normalised_y: %v", normalised_y)
     // Multiply the normalised y by max angle in radians
     bounce_angle := normalised_y * MaxBounceAngle
-    fmt.printfln("bounce_angle: %v", (180 / math.PI) * bounce_angle)
     // Calculate a direction vector on the unit circle
     direction := rl.Vector2 {
         math.cos_f32(bounce_angle),
         -math.sin_f32(bounce_angle),
     }
-    fmt.printfln("direction: %v", direction)
-
     // Update ball speed factor
     ball.speed_factor = abs(normalised_y)
-
     // Correctly update position and direction depending on paddle
     switch paddle {
     case paddle_left:
@@ -157,8 +162,7 @@ main :: proc() {
                     ball.direction.y = -ball.direction.y
                 }
 
-                update_ball(&ball, paddle_left)
-                update_ball(&ball, paddle_right)
+                update_ball(&ball)
 
                 dp :=
                     (BaseSpeed + (BaseSpeed * ball.speed_factor)) *
