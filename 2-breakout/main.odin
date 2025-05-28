@@ -6,8 +6,7 @@ import sdl "vendor:sdl3"
 
 default_context: runtime.Context
 
-frag_shader_code := #load("fragment.metal")
-vert_shader_code := #load("vertex.metal")
+shader_code := #load("shader.metal")
 
 main :: proc() {
     context.logger = log.create_console_logger()
@@ -40,14 +39,10 @@ main :: proc() {
 
     ok = sdl.ClaimWindowForGPUDevice(gpu, window);assert(ok)
 
-    vert_shader := load_shader(gpu, vert_shader_code, "vertexShader", .VERTEX)
+    vert_shader := load_shader(gpu, shader_code, "vertex_main", .VERTEX)
     assert(vert_shader != nil)
-    frag_shader := load_shader(
-        gpu,
-        frag_shader_code,
-        "fragment_main",
-        .FRAGMENT,
-    )
+
+    frag_shader := load_shader(gpu, shader_code, "fragment_main", .FRAGMENT)
     assert(frag_shader != nil)
 
     pipeline := sdl.CreateGPUGraphicsPipeline(
