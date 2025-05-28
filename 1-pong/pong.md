@@ -14,8 +14,8 @@ Hint: Following the ball with a paddle is easy, but it makes the opponent imposs
 - [ ] Add some basic sounds. Play a sound every time the ball collides with something, and every time a player scores.
 
 ### Custom goals:
-- [ ] Implement more acurate bounce math
-- [ ] Move to checking if there will be collision on the next frame
+- [x] Implement more acurate bounce math
+- [x] Clamp ball position to paddle when collision occurs
 
 ### Notes:
 Need to modify the game loop to:
