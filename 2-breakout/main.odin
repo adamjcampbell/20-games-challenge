@@ -26,23 +26,22 @@ main :: proc() {
         nil,
     )
 
-    ok := sdl.Init({.VIDEO});assert(ok)
+    ok := sdl.Init({.VIDEO})
+    assert(ok)
 
-    window := sdl.CreateWindow(
-        "Hello SDL3",
-        1280,
-        780,
-        {},
-    );assert(window != nil)
+    window := sdl.CreateWindow("Hello SDL3", 1280, 780, {})
+    assert(window != nil)
 
-    gpu := sdl.CreateGPUDevice({.MSL}, true, nil);assert(gpu != nil)
+    gpu := sdl.CreateGPUDevice({.MSL}, true, nil)
+    assert(gpu != nil)
 
-    ok = sdl.ClaimWindowForGPUDevice(gpu, window);assert(ok)
+    ok = sdl.ClaimWindowForGPUDevice(gpu, window)
+    assert(ok)
 
-    vert_shader := load_shader(gpu, shader_code, "vertex_main", .VERTEX)
+    vert_shader := load_shader(gpu, "vertex_main", .VERTEX)
     assert(vert_shader != nil)
 
-    frag_shader := load_shader(gpu, shader_code, "fragment_main", .FRAGMENT)
+    frag_shader := load_shader(gpu, "fragment_main", .FRAGMENT)
     assert(frag_shader != nil)
 
     pipeline := sdl.CreateGPUGraphicsPipeline(
@@ -112,15 +111,14 @@ main :: proc() {
 
 load_shader :: proc(
     device: ^sdl.GPUDevice,
-    code: []u8,
     entrypoint: cstring,
     stage: sdl.GPUShaderStage,
 ) -> ^sdl.GPUShader {
     return sdl.CreateGPUShader(
         device,
         {
-            code_size = len(code),
-            code = raw_data(code),
+            code_size = len(shader_code),
+            code = raw_data(shader_code),
             entrypoint = entrypoint,
             format = {.MSL},
             stage = stage,
