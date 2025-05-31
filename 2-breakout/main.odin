@@ -105,7 +105,7 @@ main :: proc() {
     }
 
     // Might need to change this to len(vertices) * size_of(vertices[0])
-    vertices_size := size_of(vertices)
+    vertices_size := len(vertices) * size_of(vertices[0])
 
     vertex_buffer := sdl.CreateGPUBuffer(
         gpu,

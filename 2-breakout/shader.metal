@@ -2,14 +2,15 @@
 
 using namespace metal;
 
-vertex float4 vertex_main(unsigned int vid [[ vertex_id ]]) {
-    float4 positions[3] = {
-        float4(-0.5, -0.5, 0.0, 1.0),
-        float4( 0.0,  0.5, 0.0, 1.0),
-        float4( 0.5, -0.5, 0.0, 1.0)
-    };
+struct VertexIn {
+    float3 pos [[ attribute(0) ]];
+};
 
-    return positions[vid];
+vertex float4 vertex_main(
+    VertexIn in [[ stage_in ]],
+    unsigned int vid [[ vertex_id ]]
+) {
+    return float4(in.pos, 1.0);
 }
 
 fragment float4 fragment_main() {
