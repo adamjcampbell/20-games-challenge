@@ -3,17 +3,25 @@
 using namespace metal;
 
 struct VertexIn {
-    float3 pos [[ attribute(0) ]];
+    float3 position [[ attribute(0) ]];
+    uchar4 color [[ attribute(1) ]];
 };
 
-vertex float4 vertex_main(
-    VertexIn in [[ stage_in ]],
-    unsigned int vid [[ vertex_id ]]
+struct VertexOut {
+    float4 position [[ position ]];
+    float4 color;
+};
+
+vertex VertexOut vertex_main(
+    VertexIn in [[ stage_in ]]
 ) {
-    return float4(in.pos, 1.0);
+    VertexOut out;
+    out.position = float4(in.position, 1.0);
+    out.color = float4(in.color) / 255.0;
+    return out;
 }
 
-fragment float4 fragment_main() {
-    return float4(1.0, 0.0, 0.0, 1.0);
+fragment float4 fragment_main(VertexOut in [[ stage_in ]]) {
+    return in.color;
 }
 

@@ -66,7 +66,7 @@ main :: proc() {
         },
         {
             buffer_slot = 0,
-            format = .UBYTE4_NORM,
+            format = .UBYTE4,
             location = 1,
             offset = size_of(f32) * 3,
         },
