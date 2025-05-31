@@ -2,11 +2,12 @@ package main
 
 import "base:runtime"
 import "core:log"
+import "core:mem"
 import sdl "vendor:sdl3"
 
 PositionColorVertex :: struct {
     x, y, z: f32,
-    r, g, b: u8,
+    r, g, b, a: u8,
 }
 
 default_context: runtime.Context
@@ -97,6 +98,57 @@ main :: proc() {
     sdl.ReleaseGPUShader(gpu, vert_shader)
     sdl.ReleaseGPUShader(gpu, frag_shader)
 
+    vertices := []PositionColorVertex {
+        {  -1,  -1,  0,  255,  0,    0,    255  },
+        {  1,   -1,  0,  0,    255,  0,    255  },
+        {  0,   1,   0,  0,    0,    255,  255  },
+    }
+
+    // Might need to change this to len(vertices) * size_of(vertices[0])
+    vertices_size := size_of(vertices)
+
+    vertex_buffer := sdl.CreateGPUBuffer(
+        gpu,
+        sdl.GPUBufferCreateInfo {
+            usage = sdl.GPUBufferUsageFlags{sdl.GPUBufferUsageFlag.VERTEX},
+            size = u32(vertices_size),
+        },
+    )
+
+    transfer_buffer := sdl.CreateGPUTransferBuffer(
+        gpu,
+        sdl.GPUTransferBufferCreateInfo {
+            usage = .UPLOAD,
+            size = u32(vertices_size),
+        },
+    )
+
+    transfer_mem := sdl.MapGPUTransferBuffer(gpu, transfer_buffer, cycle = false)
+    mem.copy(transfer_mem, raw_data(vertices), vertices_size)
+    sdl.UnmapGPUTransferBuffer(gpu, transfer_buffer)
+
+    copy_command_buffer := sdl.AcquireGPUCommandBuffer(gpu)
+
+    copy_pass := sdl.BeginGPUCopyPass(copy_command_buffer)
+
+    sdl.UploadToGPUBuffer(
+        copy_pass,
+        sdl.GPUTransferBufferLocation {
+            transfer_buffer = transfer_buffer
+        },
+        sdl.GPUBufferRegion {
+            buffer = vertex_buffer,
+            size = u32(vertices_size)
+        },
+        cycle = false,
+    )
+
+    sdl.EndGPUCopyPass(copy_pass)
+
+    ok = sdl.SubmitGPUCommandBuffer(copy_command_buffer); assert(ok)
+
+    sdl.ReleaseGPUTransferBuffer(gpu, transfer_buffer)
+
     main_loop: for {
         // process events
         ev: sdl.Event
@@ -137,6 +189,7 @@ main :: proc() {
                 nil,
             )
             sdl.BindGPUGraphicsPipeline(render_pass, pipeline)
+            sdl.BindGPUVertexBuffers(render_pass, first_slot = 0, bindings = &(sdl.GPUBufferBinding { buffer = vertex_buffer }), num_bindings = 1)
             sdl.DrawGPUPrimitives(render_pass, 3, 1, 0, 0)
             sdl.EndGPURenderPass(render_pass)
         }
