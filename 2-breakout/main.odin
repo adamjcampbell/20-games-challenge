@@ -4,8 +4,12 @@ import "base:runtime"
 import "core:log"
 import sdl "vendor:sdl3"
 
-default_context: runtime.Context
+PositionColorVertex :: struct {
+    x, y, z: f32,
+    r, g, b: u8,
+}
 
+default_context: runtime.Context
 shader_code := #load("shader.metal")
 
 main :: proc() {
@@ -44,17 +48,48 @@ main :: proc() {
     frag_shader := load_shader(gpu, "fragment_main", .FRAGMENT)
     assert(frag_shader != nil)
 
+    vertex_buffer_descriptions := [1]sdl.GPUVertexBufferDescription {
+        {
+            slot = 0,
+            input_rate = .VERTEX,
+            pitch = size_of(PositionColorVertex),
+        },
+    }
+
+    vertex_attributes := [2]sdl.GPUVertexAttribute {
+        {
+            buffer_slot = 0,
+            format = .FLOAT3,
+            location = 0,
+            offset = 0,
+        },
+        {
+            buffer_slot = 0,
+            format = .UBYTE4_NORM,
+            location = 1,
+            offset = size_of(f32) * 3,
+        },
+    }
+
     pipeline := sdl.CreateGPUGraphicsPipeline(
         gpu,
-        {
+        sdl.GPUGraphicsPipelineCreateInfo {
             vertex_shader = vert_shader,
             fragment_shader = frag_shader,
             primitive_type = .TRIANGLELIST,
+            // Change fill_mode to line for wireframe
+            rasterizer_state = sdl.GPURasterizerState {fill_mode = .FILL},
             target_info = {
                 num_color_targets = 1,
                 color_target_descriptions = &(sdl.GPUColorTargetDescription {
-                        format = sdl.GetGPUSwapchainTextureFormat(gpu, window),
-                    }),
+                    format = sdl.GetGPUSwapchainTextureFormat(gpu, window),
+                }),
+            },
+            vertex_input_state = sdl.GPUVertexInputState {
+                num_vertex_buffers = len(vertex_buffer_descriptions),
+                vertex_buffer_descriptions = &vertex_buffer_descriptions[0],
+                num_vertex_attributes = len(vertex_attributes),
+                vertex_attributes = &vertex_attributes[0],
             },
         },
     )
@@ -78,6 +113,7 @@ main :: proc() {
 
         // render
         cmd_buf := sdl.AcquireGPUCommandBuffer(gpu)
+
         swapchain_tex: ^sdl.GPUTexture
         ok = sdl.WaitAndAcquireGPUSwapchainTexture(
             cmd_buf,
