@@ -122,7 +122,7 @@ main :: proc() {
 
     transfer_mem := sdl.MapGPUTransferBuffer(gpu, transfer_buffer, cycle = false)
     mem.copy(transfer_mem, raw_data(vertices), vertices_size)
-    index_ptr := cast(rawptr)(uintptr(transfer_mem) + uintptr(indicies_size))
+    index_ptr := cast(rawptr)(uintptr(transfer_mem) + uintptr(vertices_size))
     mem.copy(index_ptr, raw_data(indicies), indicies_size)
     sdl.UnmapGPUTransferBuffer(gpu, transfer_buffer)
 
