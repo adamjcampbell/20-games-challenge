@@ -99,13 +99,35 @@ main :: proc() {
     sdl.ReleaseGPUShader(gpu, frag_shader)
 
     vertices := []PositionColorVertex {
-        {  -1,  -1,  0,  255,  0,    0,    255  },
-        {  1,   -1,  0,  0,    255,  0,    255  },
-        {  0,   1,   0,  0,    0,    255,  255  },
+        {  -1,  -1,  0,  0,    0,    255,  255  },
+        {  -1,  1,   0,  255,  0,    0,    255  },
+        {  1,   1,   0,  0,    255,  0,    255  },
+        {  1,   -1,  0,  0,    0,    255,  255  },
     }
 
-    // Might need to change this to len(vertices) * size_of(vertices[0])
+    indicies := []u16 {
+        0, 1, 2, 0, 2, 3
+    }
+
     vertices_size := len(vertices) * size_of(vertices[0])
+    indicies_size := len(indicies) * size_of(indicies[0])
+
+    transfer_buffer := sdl.CreateGPUTransferBuffer(
+        gpu,
+        sdl.GPUTransferBufferCreateInfo {
+            usage = .UPLOAD,
+            size = u32(vertices_size + indicies_size),
+        },
+    )
+
+    transfer_mem := sdl.MapGPUTransferBuffer(gpu, transfer_buffer, cycle = false)
+    mem.copy(transfer_mem, raw_data(vertices), vertices_size)
+    index_ptr := cast(rawptr)(uintptr(transfer_mem) + uintptr(indicies_size))
+    mem.copy(index_ptr, raw_data(indicies), indicies_size)
+    sdl.UnmapGPUTransferBuffer(gpu, transfer_buffer)
+
+    copy_command_buffer := sdl.AcquireGPUCommandBuffer(gpu)
+    copy_pass := sdl.BeginGPUCopyPass(copy_command_buffer)
 
     vertex_buffer := sdl.CreateGPUBuffer(
         gpu,
@@ -115,22 +137,6 @@ main :: proc() {
         },
     )
 
-    transfer_buffer := sdl.CreateGPUTransferBuffer(
-        gpu,
-        sdl.GPUTransferBufferCreateInfo {
-            usage = .UPLOAD,
-            size = u32(vertices_size),
-        },
-    )
-
-    transfer_mem := sdl.MapGPUTransferBuffer(gpu, transfer_buffer, cycle = false)
-    mem.copy(transfer_mem, raw_data(vertices), vertices_size)
-    sdl.UnmapGPUTransferBuffer(gpu, transfer_buffer)
-
-    copy_command_buffer := sdl.AcquireGPUCommandBuffer(gpu)
-
-    copy_pass := sdl.BeginGPUCopyPass(copy_command_buffer)
-
     sdl.UploadToGPUBuffer(
         copy_pass,
         sdl.GPUTransferBufferLocation {
@@ -139,6 +145,27 @@ main :: proc() {
         sdl.GPUBufferRegion {
             buffer = vertex_buffer,
             size = u32(vertices_size)
+        },
+        cycle = false,
+    )
+
+    index_buffer := sdl.CreateGPUBuffer(
+        gpu,
+        sdl.GPUBufferCreateInfo {
+            usage = sdl.GPUBufferUsageFlags{sdl.GPUBufferUsageFlag.INDEX},
+            size = u32(indicies_size),
+        },
+    )
+
+    sdl.UploadToGPUBuffer(
+        copy_pass,
+        sdl.GPUTransferBufferLocation {
+            transfer_buffer = transfer_buffer,
+            offset = u32(vertices_size)
+        },
+        sdl.GPUBufferRegion {
+            buffer = index_buffer,
+            size = u32(indicies_size)
         },
         cycle = false,
     )
@@ -189,8 +216,18 @@ main :: proc() {
                 nil,
             )
             sdl.BindGPUGraphicsPipeline(render_pass, pipeline)
-            sdl.BindGPUVertexBuffers(render_pass, first_slot = 0, bindings = &(sdl.GPUBufferBinding { buffer = vertex_buffer }), num_bindings = 1)
-            sdl.DrawGPUPrimitives(render_pass, 3, 1, 0, 0)
+            sdl.BindGPUVertexBuffers(
+                render_pass,
+                first_slot = 0,
+                bindings = &(sdl.GPUBufferBinding { buffer = vertex_buffer }),
+                num_bindings = 1
+            )
+            sdl.BindGPUIndexBuffer(
+                render_pass,
+                binding = sdl.GPUBufferBinding { buffer = index_buffer },
+                index_element_size = sdl.GPUIndexElementSize._16BIT,
+            )
+            sdl.DrawGPUIndexedPrimitives(render_pass, 6, 1, 0, 0, 0)
             sdl.EndGPURenderPass(render_pass)
         }
 
