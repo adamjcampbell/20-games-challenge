@@ -11,6 +11,13 @@ PositionColorVertex :: struct {
     r, g, b, a: u8,
 }
 
+WINDOW_WIDTH :: 1280
+WINDOW_HEIGHT :: 720
+
+UBO :: struct {
+    screen_size: [2]f32
+}
+
 default_context: runtime.Context
 shader_code := #load("shader.metal")
 
@@ -35,7 +42,7 @@ main :: proc() {
     ok := sdl.Init({.VIDEO})
     assert(ok)
 
-    window := sdl.CreateWindow("Hello SDL3", 1280, 780, {})
+    window := sdl.CreateWindow("Hello SDL3", WINDOW_WIDTH, WINDOW_HEIGHT, {})
     assert(window != nil)
 
     gpu := sdl.CreateGPUDevice({.MSL}, true, nil)
@@ -44,10 +51,10 @@ main :: proc() {
     ok = sdl.ClaimWindowForGPUDevice(gpu, window)
     assert(ok)
 
-    vert_shader := load_shader(gpu, "vertex_main", .VERTEX)
+    vert_shader := load_shader(gpu, "vertex_main", .VERTEX, 0)
     assert(vert_shader != nil)
 
-    frag_shader := load_shader(gpu, "fragment_main", .FRAGMENT)
+    frag_shader := load_shader(gpu, "fragment_main", .FRAGMENT, 1)
     assert(frag_shader != nil)
 
     vertex_buffer_descriptions := [1]sdl.GPUVertexBufferDescription {
@@ -180,6 +187,13 @@ main :: proc() {
 
     sdl.ReleaseGPUTransferBuffer(gpu, transfer_buffer)
 
+    window_size: [2]i32
+    ok = sdl.GetWindowSize(window, &window_size.x, &window_size.y); assert(ok)
+
+    ubo := UBO {
+        screen_size = { f32(window_size.x), f32(window_size.y) }
+    }
+
     main_loop: for {
         // process events
         ev: sdl.Event
@@ -231,6 +245,7 @@ main :: proc() {
                 binding = sdl.GPUBufferBinding { buffer = index_buffer },
                 index_element_size = sdl.GPUIndexElementSize._16BIT,
             )
+            sdl.PushGPUFragmentUniformData(cmd_buf, 0, &ubo, size_of(ubo))
             sdl.DrawGPUIndexedPrimitives(render_pass, 6, 1, 0, 0, 0)
             sdl.EndGPURenderPass(render_pass)
         }
@@ -243,6 +258,7 @@ load_shader :: proc(
     device: ^sdl.GPUDevice,
     entrypoint: cstring,
     stage: sdl.GPUShaderStage,
+    num_uniform_buffers: u32,
 ) -> ^sdl.GPUShader {
     return sdl.CreateGPUShader(
         device,
@@ -252,6 +268,7 @@ load_shader :: proc(
             entrypoint = entrypoint,
             format = {.MSL},
             stage = stage,
+            num_uniform_buffers = num_uniform_buffers,
         },
     )
 }
