@@ -3,6 +3,7 @@ package main
 import "base:runtime"
 import "core:log"
 import "core:mem"
+import "core:slice"
 import sdl "vendor:sdl3"
 
 PositionColorVertex :: struct {
@@ -109,8 +110,13 @@ main :: proc() {
         0, 1, 2, 0, 2, 3
     }
 
-    vertices_size := len(vertices) * size_of(vertices[0])
-    indicies_size := len(indicies) * size_of(indicies[0])
+    transfer_data := slice.concatenate(
+        [][]byte{ slice.to_bytes(vertices), slice.to_bytes(indicies) }
+    )
+
+    vertices_size := slice.size(vertices)
+    indicies_size := slice.size(indicies)
+    transfer_size := slice.size(transfer_data)
 
     transfer_buffer := sdl.CreateGPUTransferBuffer(
         gpu,
@@ -121,9 +127,7 @@ main :: proc() {
     )
 
     transfer_mem := sdl.MapGPUTransferBuffer(gpu, transfer_buffer, cycle = false)
-    mem.copy(transfer_mem, raw_data(vertices), vertices_size)
-    index_ptr := cast(rawptr)(uintptr(transfer_mem) + uintptr(vertices_size))
-    mem.copy(index_ptr, raw_data(indicies), indicies_size)
+    mem.copy(transfer_mem, raw_data(transfer_data), transfer_size)
     sdl.UnmapGPUTransferBuffer(gpu, transfer_buffer)
 
     copy_command_buffer := sdl.AcquireGPUCommandBuffer(gpu)
