@@ -42,7 +42,7 @@ main :: proc() {
     ok := sdl.Init({.VIDEO})
     assert(ok)
 
-    window := sdl.CreateWindow("Hello SDL3", WINDOW_WIDTH, WINDOW_HEIGHT, {})
+    window := sdl.CreateWindow("Breakout", WINDOW_WIDTH, WINDOW_HEIGHT, {})
     assert(window != nil)
 
     gpu := sdl.CreateGPUDevice({.MSL}, true, nil)
