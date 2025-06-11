@@ -193,6 +193,7 @@ main :: proc() {
 
     sdl.ReleaseGPUTransferBuffer(gpu, transfer_buffer)
 
+    // Fetch the current window size in case user has changed resolution
     window_size: [2]i32
     ok = sdl.GetWindowSize(window, &window_size.x, &window_size.y); assert(ok)
 
