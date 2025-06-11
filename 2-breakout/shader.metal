@@ -35,7 +35,13 @@ fragment float4 fragment_main(
     float d = distance(position, center);
     float length = 20;
 
-    if (d < length) {
+    float2 paddle_pos = float2(center.x - 100, uniforms.screen_size.y - 100);
+    float2 paddle_size = float2(300, 50);
+    // An implementation of point in rect; compares the vectors in catesian space
+    float2 relative_pos = position - paddle_pos;
+    bool paddle_check = all(relative_pos >= 0.0) && all(relative_pos < paddle_size);
+
+    if (d < length || paddle_check) {
         return float4(1.0, 1.0, 1.0, 1.0);
     } else {
         return float4(0.0, 0.0, 0.0, 0.0);
