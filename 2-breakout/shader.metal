@@ -25,6 +25,12 @@ vertex VertexOut vertex_main(
     return out;
 }
 
+// Checks the point is in rect by making a relative point and checking it is within bounds
+bool point_in_rect(float2 point, float2 top_left, float2 size) {
+    float2 rel = point - top_left;
+    return all(rel >= 0.0) && all(rel < size);
+}
+
 fragment float4 fragment_main(
     VertexOut in [[ stage_in ]],
     constant Uniforms& uniforms [[buffer(0)]]
@@ -37,10 +43,7 @@ fragment float4 fragment_main(
 
     float2 paddle_pos = float2(center.x - 100, uniforms.screen_size.y - 100);
     float2 paddle_size = float2(300, 50);
-    // An implementation of point in rect; compares the vectors in catesian space
-    float2 relative_pos = position - paddle_pos; // Distance from top left point
-    // relative_pos is inside; not above, left of, right of, or beneath
-    bool paddle_check = all(relative_pos >= 0.0) && all(relative_pos < paddle_size);
+    bool paddle_check = point_in_rect(position, paddle_pos, paddle_size);
 
     if (d < length || paddle_check) {
         return float4(1.0, 1.0, 1.0, 1.0);
