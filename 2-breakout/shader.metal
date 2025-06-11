@@ -47,7 +47,11 @@ fragment float4 fragment_main(
 
     float2 bricks_pos = float2(140, 50);
     float2 bricks_size = float2(1000, 50);
-    bool bricks_check = point_in_rect(position, bricks_pos, bricks_size);
+    float bricks_rel_x = position.x - bricks_pos.x;
+    float line_width = 4.0;
+    float line_spacing = 100.0;
+    bool not_brick_gap = fmod(bricks_rel_x, line_spacing) > line_width || bricks_rel_x > 950.0;
+    bool bricks_check = point_in_rect(position, bricks_pos, bricks_size) && not_brick_gap;
 
     if (d < length || paddle_check || bricks_check) {
         return float4(1.0, 1.0, 1.0, 1.0);
