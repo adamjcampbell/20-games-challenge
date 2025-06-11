@@ -42,7 +42,7 @@ fragment float4 fragment_main(
     float length = 20;
 
     float2 paddle_pos = float2(center.x - 100, uniforms.screen_size.y - 100);
-    float2 paddle_size = float2(300, 50);
+    float2 paddle_size = float2(200, 30);
     bool paddle_check = point_in_rect(position, paddle_pos, paddle_size);
 
     if (d < length || paddle_check) {
