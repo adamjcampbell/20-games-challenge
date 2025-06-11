@@ -2,8 +2,14 @@
 
 using namespace metal;
 
+struct Ball {
+    float2 pos;
+    float radius;
+};
+
 struct Uniforms {
     float2 screen_size; // (width, height)
+    Ball ball;
 };
 
 struct VertexIn {
@@ -38,8 +44,9 @@ fragment float4 fragment_main(
     float2 center = float2(uniforms.screen_size.x * 0.5, uniforms.screen_size.y * 0.5);
     float2 position = in.position.xy;
 
-    float d = distance(position, center);
-    float length = 20;
+    float d = distance(position, uniforms.ball.pos);
+    float length = uniforms.ball.radius;
+    bool ball_check = d < length;
 
     float2 paddle_pos = float2(center.x - 100, uniforms.screen_size.y - 100);
     float2 paddle_size = float2(200, 30);
@@ -59,7 +66,7 @@ fragment float4 fragment_main(
         return float4(1.0, 0.0, 0.0, 0.0);
     }
 
-    if (d < length || paddle_check) {
+    if (ball_check || paddle_check) {
         return float4(1.0, 1.0, 1.0, 1.0);
     } else {
         return float4(0.0, 0.0, 0.0, 0.0);

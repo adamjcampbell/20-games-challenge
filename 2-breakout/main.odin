@@ -14,8 +14,14 @@ PositionColorVertex :: struct {
 WINDOW_WIDTH :: 1280
 WINDOW_HEIGHT :: 720
 
+Ball :: struct {
+    pos: [2]f32,
+    radius: f32
+}
+
 UBO :: struct {
-    screen_size: [2]f32
+    screen_size: [2]f32,
+    ball: Ball
 }
 
 default_context: runtime.Context
@@ -191,7 +197,8 @@ main :: proc() {
     ok = sdl.GetWindowSize(window, &window_size.x, &window_size.y); assert(ok)
 
     ubo := UBO {
-        screen_size = { f32(window_size.x), f32(window_size.y) }
+        screen_size = { f32(window_size.x), f32(window_size.y) },
+        ball = { { (f32(window_size.x) / 2) - 200, f32(window_size.y) / 2 }, 5 }
     }
 
     main_loop: for {
