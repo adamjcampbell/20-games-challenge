@@ -45,7 +45,11 @@ fragment float4 fragment_main(
     float2 paddle_size = float2(200, 30);
     bool paddle_check = point_in_rect(position, paddle_pos, paddle_size);
 
-    if (d < length || paddle_check) {
+    float2 bricks_pos = float2(140, 50);
+    float2 bricks_size = float2(1000, 50);
+    bool bricks_check = point_in_rect(position, bricks_pos, bricks_size);
+
+    if (d < length || paddle_check || bricks_check) {
         return float4(1.0, 1.0, 1.0, 1.0);
     } else {
         return float4(0.0, 0.0, 0.0, 0.0);
