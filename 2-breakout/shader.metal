@@ -32,10 +32,13 @@ fragment float4 fragment_main(
     float2 center = float2(uniforms.screen_size.x * 0.5, uniforms.screen_size.y * 0.5);
     float2 position = in.position.xy;
 
-    if (position.x < center.x || position.y < center.y) {
-        return float4(0.0, 0.0, 0.0, 0.0);
-    } else {
+    float d = distance(position, center);
+    float length = 20;
+
+    if (d < length) {
         return float4(1.0, 1.0, 1.0, 1.0);
+    } else {
+        return float4(0.0, 0.0, 0.0, 0.0);
     }
 }
 
