@@ -50,10 +50,16 @@ fragment float4 fragment_main(
     float bricks_rel_x = position.x - bricks_pos.x;
     float line_width = 4.0;
     float line_spacing = 100.0;
-    bool not_brick_gap = fmod(bricks_rel_x, line_spacing) > line_width || bricks_rel_x > 950.0;
-    bool bricks_check = point_in_rect(position, bricks_pos, bricks_size) && not_brick_gap;
+    bool not_brick_gap = fract(bricks_rel_x / line_spacing) > (line_width / line_spacing) || bricks_rel_x < line_width;
+    bool in_brick_rect = point_in_rect(position, bricks_pos, bricks_size);
 
-    if (d < length || paddle_check || bricks_check) {
+    if (in_brick_rect && not_brick_gap) {
+        return float4(1.0, 1.0, 1.0, 1.0);
+    } else if (in_brick_rect) {
+        return float4(1.0, 0.0, 0.0, 0.0);
+    }
+
+    if (d < length || paddle_check) {
         return float4(1.0, 1.0, 1.0, 1.0);
     } else {
         return float4(0.0, 0.0, 0.0, 0.0);
