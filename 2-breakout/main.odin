@@ -14,14 +14,20 @@ PositionColorVertex :: struct {
 WINDOW_WIDTH :: 1280
 WINDOW_HEIGHT :: 720
 
-Ball :: struct {
+Ball :: struct #align(8) {
     pos: [2]f32,
-    radius: f32
+    radius: f32,
+}
+
+Paddle :: struct {
+    pos: [2]f32,
+    size: [2]f32,
 }
 
 UBO :: struct {
     screen_size: [2]f32,
-    ball: Ball
+    ball: Ball,
+    paddle: Paddle,
 }
 
 default_context: runtime.Context
@@ -199,8 +205,16 @@ main :: proc() {
 
     ubo := UBO {
         screen_size = { f32(window_size.x), f32(window_size.y) },
-        ball = { { (f32(window_size.x) / 2) - 200, f32(window_size.y) / 2 }, 5 }
+        ball = {
+            pos = { (f32(window_size.x) / 2) - 200, f32(window_size.y) / 2 },
+            radius = 5
+        },
+        paddle = {
+            size = { 200, 30 },
+        },
     }
+
+    ubo.paddle.pos = { (f32(window_size.x) / 2) - (ubo.paddle.size.x / 2), f32(window_size.y) - 100 }
 
     main_loop: for {
         // process events

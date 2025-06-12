@@ -7,9 +7,15 @@ struct Ball {
     float radius;
 };
 
+struct Paddle {
+    float2 pos;
+    float2 size;
+};
+
 struct Uniforms {
     float2 screen_size; // (width, height)
     Ball ball;
+    Paddle paddle;
 };
 
 struct VertexIn {
@@ -48,9 +54,7 @@ fragment float4 fragment_main(
     float length = uniforms.ball.radius;
     bool ball_check = d < length;
 
-    float2 paddle_pos = float2(center.x - 100, uniforms.screen_size.y - 100);
-    float2 paddle_size = float2(200, 30);
-    bool paddle_check = point_in_rect(position, paddle_pos, paddle_size);
+    bool paddle_check = point_in_rect(position, uniforms.paddle.pos, uniforms.paddle.size);
 
     float2 bricks_pos = float2(140, 50);
     float2 bricks_size = float2(1000, 50);
