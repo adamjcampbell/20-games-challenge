@@ -2,25 +2,35 @@
 
 using namespace metal;
 
+struct Position {
+    float x;
+    float y;
+};
+
+struct Size {
+    float width;
+    float height;
+};
+
 struct Ball {
-    float2 pos;
+    Position pos;
     float radius;
 };
 
 struct Paddle {
-    float2 pos;
-    float2 size;
+    Position pos;
+    Size size;
 };
 
 struct Bricks {
-    float2 pos;
-    float2 size;
+    Position pos;
+    Size size;
     float line_width;
     float h_spacing;
 };
 
 struct Uniforms {
-    float2 screen_size; // (width, height)
+    Size screen_size; // (width, height)
     Ball ball;
     Paddle paddle;
     Bricks bricks;
@@ -45,10 +55,18 @@ vertex VertexOut vertex_main(
     return out;
 }
 
+float2 to_float2(Position position) {
+    return float2(position.x, position.y);
+}
+
+float2 to_float2(Size size) {
+    return float2(size.width, size.height);
+}
+
 // Checks the point is in rect by making a relative point and checking it is within bounds
-bool point_in_rect(float2 point, float2 top_left, float2 size) {
-    float2 rel = point - top_left;
-    return all(rel >= 0.0) && all(rel < size);
+bool point_in_rect(float2 point, Position top_left, Size size) {
+    float2 rel = point - to_float2(top_left);
+    return all(rel >= 0.0) && all(rel < to_float2(size));
 }
 
 fragment float4 fragment_main(
@@ -57,7 +75,7 @@ fragment float4 fragment_main(
 ) {
     float2 position = in.position.xy;
 
-    float d = distance(position, uniforms.ball.pos);
+    float d = distance(position, to_float2(uniforms.ball.pos));
     float length = uniforms.ball.radius;
     bool ball_check = d < length;
 

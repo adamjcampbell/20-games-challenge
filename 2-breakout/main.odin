@@ -14,25 +14,33 @@ PositionColorVertex :: struct {
 WINDOW_WIDTH :: 1280
 WINDOW_HEIGHT :: 720
 
-Ball :: struct #align(8) {
-    pos: [2]f32,
+Position :: struct {
+    x, y: f32
+}
+
+Size :: struct {
+    width, height: f32
+}
+
+Ball :: struct {
+    pos: Position,
     radius: f32,
 }
 
 Paddle :: struct {
-    pos: [2]f32,
-    size: [2]f32,
+    pos: Position,
+    size: Size,
 }
 
-Bricks :: struct #align(8) {
-    pos: [2]f32,
-    size: [2]f32,
+Bricks :: struct {
+    pos: Position,
+    size: Size,
     line_width: f32,
     h_spacing: f32,
 }
 
 UBO :: struct {
-    screen_size: [2]f32,
+    screen_size: Size,
     ball: Ball,
     paddle: Paddle,
     bricks: Bricks,
@@ -228,7 +236,7 @@ main :: proc() {
         },
     }
 
-    ubo.paddle.pos = { (f32(window_size.x) / 2) - (ubo.paddle.size.x / 2), f32(window_size.y) - 100 }
+    ubo.paddle.pos = { (f32(window_size.x) / 2) - (ubo.paddle.size.width / 2), f32(window_size.y) - 100 }
 
     main_loop: for {
         // process events
