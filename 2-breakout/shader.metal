@@ -12,10 +12,18 @@ struct Paddle {
     float2 size;
 };
 
+struct Bricks {
+    float2 pos;
+    float2 size;
+    float line_width;
+    float h_spacing;
+};
+
 struct Uniforms {
     float2 screen_size; // (width, height)
     Ball ball;
     Paddle paddle;
+    Bricks bricks;
 };
 
 struct VertexIn {
@@ -47,7 +55,6 @@ fragment float4 fragment_main(
     VertexOut in [[ stage_in ]],
     constant Uniforms& uniforms [[buffer(0)]]
 ) {
-    float2 center = float2(uniforms.screen_size.x * 0.5, uniforms.screen_size.y * 0.5);
     float2 position = in.position.xy;
 
     float d = distance(position, uniforms.ball.pos);
@@ -56,13 +63,11 @@ fragment float4 fragment_main(
 
     bool paddle_check = point_in_rect(position, uniforms.paddle.pos, uniforms.paddle.size);
 
-    float2 bricks_pos = float2(140, 50);
-    float2 bricks_size = float2(1000, 50);
-    float bricks_rel_x = position.x - bricks_pos.x;
-    float line_width = 4.0;
-    float line_spacing = 100.0;
+    float bricks_rel_x = position.x - uniforms.bricks.pos.x;
+    float line_width = uniforms.bricks.line_width;
+    float line_spacing = uniforms.bricks.h_spacing;
     bool not_brick_gap = fract(bricks_rel_x / line_spacing) > (line_width / line_spacing) || bricks_rel_x < line_width;
-    bool in_brick_rect = point_in_rect(position, bricks_pos, bricks_size);
+    bool in_brick_rect = point_in_rect(position, uniforms.bricks.pos, uniforms.bricks.size);
 
     if (in_brick_rect && not_brick_gap) {
         return float4(1.0, 1.0, 1.0, 1.0);

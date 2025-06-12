@@ -24,10 +24,18 @@ Paddle :: struct {
     size: [2]f32,
 }
 
+Bricks :: struct #align(8) {
+    pos: [2]f32,
+    size: [2]f32,
+    line_width: f32,
+    h_spacing: f32,
+}
+
 UBO :: struct {
     screen_size: [2]f32,
     ball: Ball,
     paddle: Paddle,
+    bricks: Bricks,
 }
 
 default_context: runtime.Context
@@ -211,6 +219,12 @@ main :: proc() {
         },
         paddle = {
             size = { 200, 30 },
+        },
+        bricks = {
+            pos = { 140, 50 },
+            size = { 1000, 50 },
+            line_width = 4,
+            h_spacing = 100,
         },
     }
 
