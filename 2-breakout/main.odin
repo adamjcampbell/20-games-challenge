@@ -238,7 +238,16 @@ main :: proc() {
 
     ubo.paddle.pos = { (f32(window_size.x) / 2) - (ubo.paddle.size.width / 2), f32(window_size.y) - 100 }
 
+    current_time := sdl.GetTicks()
+    last_time: u64
+    delta_time: f32
+
     main_loop: for {
+        // calculate delta time
+        last_time = current_time
+        current_time = sdl.GetTicks()
+        delta_time = f32(current_time - last_time) / 1000
+
         // process events
         ev: sdl.Event
         for sdl.PollEvent(&ev) {
