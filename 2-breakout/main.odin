@@ -255,6 +255,8 @@ main :: proc() {
         delta_time = f32(current_time - last_time) / 1000
 
         // process events
+        space_pressed: bool
+
         ev: sdl.Event
         for sdl.PollEvent(&ev) {
             #partial switch ev.type {
@@ -262,7 +264,7 @@ main :: proc() {
                 break main_loop
             case .KEY_DOWN:
                 if ev.key.scancode == .ESCAPE do break main_loop
-                if ev.key.scancode == .SPACE do playing = true
+                if ev.key.scancode == .SPACE do space_pressed = true
             }
         }
 
@@ -271,12 +273,13 @@ main :: proc() {
         paddle_middle := transmute([2]f32)ubo.paddle.pos
         paddle_middle.x += ubo.paddle.size.width / 2
 
-        if !(ball_pos.x > 0 && ball_pos.x < f32(window_size.x)) && !playing {
-            ball_direction.x = -ball_direction.x
+        if !playing && space_pressed {
+            playing = true
+            ball_direction = linalg.normalize(paddle_middle - ball_pos)
         }
 
-        if playing {
-            ball_direction = linalg.normalize(paddle_middle - ball_pos)
+        if !(ball_pos.x > 0 && ball_pos.x < f32(window_size.x)) && !playing {
+            ball_direction.x = -ball_direction.x
         }
 
         ball_pos += ball_direction * ball_velocity * delta_time
