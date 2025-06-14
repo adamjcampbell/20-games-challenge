@@ -222,8 +222,8 @@ main :: proc() {
     ubo := UBO {
         screen_size = { f32(window_size.x), f32(window_size.y) },
         ball = {
-            pos = { (f32(window_size.x) / 2) - 200, f32(window_size.y) / 2 },
-            radius = 5
+            pos = { (f32(window_size.x) / 2), f32(window_size.y) / 2 },
+            radius = 16
         },
         paddle = {
             size = { 200, 30 },
@@ -237,6 +237,8 @@ main :: proc() {
     }
 
     ubo.paddle.pos = { (f32(window_size.x) / 2) - (ubo.paddle.size.width / 2), f32(window_size.y) - 100 }
+
+    ball_velocity: f32 = 100
 
     current_time := sdl.GetTicks()
     last_time: u64
@@ -260,6 +262,13 @@ main :: proc() {
         }
 
         // update game state
+        ball_x := ubo.ball.pos.x
+
+        if !(ball_x > 0 && ball_x < f32(window_size.x)) {
+            ball_velocity = -ball_velocity
+        }
+
+        ubo.ball.pos.x += ball_velocity * delta_time
 
         // render
         cmd_buf := sdl.AcquireGPUCommandBuffer(gpu)
