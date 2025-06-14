@@ -278,7 +278,9 @@ main :: proc() {
             ball_direction = linalg.normalize(paddle_middle - ball_pos)
         }
 
-        if !(ball_pos.x > ubo.ball.radius && ball_pos.x < f32(window_size.x) - ubo.ball.radius) && !playing {
+        at_edge := !(ball_pos.x > ubo.ball.radius && ball_pos.x < f32(window_size.x) - ubo.ball.radius)
+
+        if at_edge && !playing {
             ball_direction.x = -ball_direction.x
         }
 
@@ -290,6 +292,10 @@ main :: proc() {
 
         if distance < ubo.ball.radius {
             ball_direction.y = -ball_direction.y
+        }
+
+        if at_edge && playing {
+            ball_direction.x = -ball_direction.x
         }
 
         // update - position
