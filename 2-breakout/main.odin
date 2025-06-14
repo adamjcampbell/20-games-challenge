@@ -2,6 +2,7 @@ package main
 
 import "base:runtime"
 import "core:log"
+import "core:math/linalg"
 import "core:mem"
 import "core:slice"
 import sdl "vendor:sdl3"
@@ -238,7 +239,8 @@ main :: proc() {
 
     ubo.paddle.pos = { (f32(window_size.x) / 2) - (ubo.paddle.size.width / 2), f32(window_size.y) - 100 }
 
-    ball_velocity: f32 = 100
+    ball_velocity: f32 = 400
+    ball_direction: [2]f32 = { 1, 0 }
 
     current_time := sdl.GetTicks()
     last_time: u64
@@ -262,13 +264,15 @@ main :: proc() {
         }
 
         // update game state
-        ball_x := ubo.ball.pos.x
+        ball_pos: [2]f32 = { ubo.ball.pos.x, ubo.ball.pos.y }
+        paddle_pos: [2]f32 = { ubo.paddle.pos.x, ubo.paddle.pos.y }
 
-        if !(ball_x > 0 && ball_x < f32(window_size.x)) {
-            ball_velocity = -ball_velocity
+        if !(ball_pos.x > 0 && ball_pos.x < f32(window_size.x)) {
+            ball_direction.x = -ball_direction.x
         }
 
-        ubo.ball.pos.x += ball_velocity * delta_time
+        ball_pos += ball_direction * ball_velocity * delta_time
+        ubo.ball.pos = { ball_pos.x, ball_pos.y }
 
         // render
         cmd_buf := sdl.AcquireGPUCommandBuffer(gpu)
