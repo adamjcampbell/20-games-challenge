@@ -278,9 +278,21 @@ main :: proc() {
             ball_direction = linalg.normalize(paddle_middle - ball_pos)
         }
 
-        if !(ball_pos.x > 0 && ball_pos.x < f32(window_size.x)) && !playing {
+        if !(ball_pos.x > ubo.ball.radius && ball_pos.x < f32(window_size.x) - ubo.ball.radius) && !playing {
             ball_direction.x = -ball_direction.x
         }
+
+        // update - collision (ball x paddle)
+        closest_x := clamp(ball_pos.x, ubo.paddle.pos.x, ubo.paddle.pos.x + ubo.paddle.size.width)
+        closest_y := clamp(ball_pos.y, ubo.paddle.pos.y, ubo.paddle.pos.y + ubo.paddle.size.width)
+        closest_point: [2]f32 = { closest_x, closest_y }
+        distance := linalg.distance(ball_pos, closest_point)
+
+        if distance < ubo.ball.radius {
+            ball_direction.y = -ball_direction.y
+        }
+
+        // update - position
 
         ball_pos += ball_direction * ball_velocity * delta_time
         ubo.ball.pos = transmute(Position)ball_pos
