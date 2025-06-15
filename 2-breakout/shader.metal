@@ -42,21 +42,19 @@ bool point_in_rect(float2 point, float2 top_left, float2 size) {
 
 fragment float4 fragment_main(
     VertexOut in [[ stage_in ]],
-    constant Uniforms& uniforms [[buffer(0)]]
+    constant Uniforms& u [[buffer(0)]]
 ) {
     float2 position = in.position.xy;
 
-    float d = distance(position, uniforms.ball_pos);
-    float length = uniforms.ball_radius;
-    bool ball_check = d < length;
+    float d = distance(position, u.ball_pos);
+    bool ball_check = d < u.ball_radius;
 
-    bool paddle_check = point_in_rect(position, uniforms.paddle_pos, uniforms.paddle_size);
+    bool paddle_check = point_in_rect(position, u.paddle_pos, u.paddle_size);
 
-    float bricks_rel_x = position.x - uniforms.bricks_pos.x;
-    float line_width = uniforms.bricks_line_width;
-    float line_spacing = uniforms.bricks_h_spacing;
-    bool not_brick_gap = fract(bricks_rel_x / line_spacing) > (line_width / line_spacing) || bricks_rel_x < line_width;
-    bool in_brick_rect = point_in_rect(position, uniforms.bricks_pos, uniforms.bricks_size);
+    float bricks_rel_x = position.x - u.bricks_pos.x;
+    bool not_brick_gap = fract(bricks_rel_x / u.bricks_h_spacing) > (u.bricks_line_width / u.bricks_h_spacing)
+        || bricks_rel_x < u.bricks_line_width;
+    bool in_brick_rect = point_in_rect(position, u.bricks_pos, u.bricks_size);
 
     if (in_brick_rect && not_brick_gap) {
         return float4(1.0, 1.0, 1.0, 1.0);
