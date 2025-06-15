@@ -2,38 +2,26 @@
 
 using namespace metal;
 
-struct Position {
-    float x;
-    float y;
-};
-
 struct Size {
     float width;
     float height;
 };
 
-struct Ball {
-    Position pos;
-    float radius;
-};
-
-struct Paddle {
-    Position pos;
-    Size size;
-};
-
-struct Bricks {
-    Position pos;
-    Size size;
-    float line_width;
-    float h_spacing;
-};
-
 struct Uniforms {
-    Size screen_size; // (width, height)
-    Ball ball;
-    Paddle paddle;
-    Bricks bricks;
+    Size screen_size;
+
+    float2 ball_pos;
+
+    float2 paddle_pos;
+    Size paddle_size;
+
+    float2 bricks_pos;
+    Size bricks_size;
+
+    float ball_radius;
+
+    float bricks_line_width;
+    float bricks_h_spacing;
 };
 
 struct VertexIn {
@@ -55,18 +43,10 @@ vertex VertexOut vertex_main(
     return out;
 }
 
-float2 to_float2(Position position) {
-    return float2(position.x, position.y);
-}
-
-float2 to_float2(Size size) {
-    return float2(size.width, size.height);
-}
-
 // Checks the point is in rect by making a relative point and checking it is within bounds
-bool point_in_rect(float2 point, Position top_left, Size size) {
-    float2 rel = point - to_float2(top_left);
-    return all(rel >= 0.0) && all(rel < to_float2(size));
+bool point_in_rect(float2 point, float2 top_left, Size size) {
+    float2 rel = point - top_left;
+    return all(rel >= 0.0) && all(rel < float2(size.width, size.height));
 }
 
 fragment float4 fragment_main(
@@ -75,17 +55,17 @@ fragment float4 fragment_main(
 ) {
     float2 position = in.position.xy;
 
-    float d = distance(position, to_float2(uniforms.ball.pos));
-    float length = uniforms.ball.radius;
+    float d = distance(position, uniforms.ball_pos);
+    float length = uniforms.ball_radius;
     bool ball_check = d < length;
 
-    bool paddle_check = point_in_rect(position, uniforms.paddle.pos, uniforms.paddle.size);
+    bool paddle_check = point_in_rect(position, uniforms.paddle_pos, uniforms.paddle_size);
 
-    float bricks_rel_x = position.x - uniforms.bricks.pos.x;
-    float line_width = uniforms.bricks.line_width;
-    float line_spacing = uniforms.bricks.h_spacing;
+    float bricks_rel_x = position.x - uniforms.bricks_pos.x;
+    float line_width = uniforms.bricks_line_width;
+    float line_spacing = uniforms.bricks_h_spacing;
     bool not_brick_gap = fract(bricks_rel_x / line_spacing) > (line_width / line_spacing) || bricks_rel_x < line_width;
-    bool in_brick_rect = point_in_rect(position, uniforms.bricks.pos, uniforms.bricks.size);
+    bool in_brick_rect = point_in_rect(position, uniforms.bricks_pos, uniforms.bricks_size);
 
     if (in_brick_rect && not_brick_gap) {
         return float4(1.0, 1.0, 1.0, 1.0);

@@ -15,36 +15,29 @@ PositionColorVertex :: struct {
 WINDOW_WIDTH :: 1280
 WINDOW_HEIGHT :: 720
 
-Position :: struct {
-    x, y: f32
-}
-
 Size :: struct {
     width, height: f32
 }
 
-Ball :: struct {
-    pos: Position,
-    radius: f32,
-}
-
-Paddle :: struct {
-    pos: Position,
-    size: Size,
-}
-
-Bricks :: struct {
-    pos: Position,
-    size: Size,
-    line_width: f32,
-    h_spacing: f32,
-}
+Vector2 :: [2]f32
 
 UBO :: struct {
+    // 8 byte data
     screen_size: Size,
-    ball: Ball,
-    paddle: Paddle,
-    bricks: Bricks,
+
+    ball_pos: Vector2,
+
+    paddle_pos: Vector2,
+    paddle_size: Size,
+
+    bricks_pos: Vector2,
+    bricks_size: Size,
+
+    // 4 byte data
+    ball_radius: f32,
+
+    bricks_line_width: f32,
+    bricks_h_spacing: f32,
 }
 
 default_context: runtime.Context
@@ -222,22 +215,16 @@ main :: proc() {
 
     ubo := UBO {
         screen_size = { f32(window_size.x), f32(window_size.y) },
-        ball = {
-            pos = { (f32(window_size.x) / 2), f32(window_size.y) / 2 },
-            radius = 16
-        },
-        paddle = {
-            size = { 200, 30 },
-        },
-        bricks = {
-            pos = { 140, 50 },
-            size = { 1000, 50 },
-            line_width = 4,
-            h_spacing = 100,
-        },
+        ball_pos = { (f32(window_size.x) / 2), f32(window_size.y) / 2 },
+        ball_radius = 16,
+        paddle_size = { 200, 30 },
+        bricks_pos = { 140, 50 },
+        bricks_size = { 1000, 50 },
+        bricks_line_width = 4,
+        bricks_h_spacing = 100,
     }
 
-    ubo.paddle.pos = { (f32(window_size.x) / 2) - (ubo.paddle.size.width / 2), f32(window_size.y) - 100 }
+    ubo.paddle_pos = { (f32(window_size.x) / 2) - (ubo.paddle_size.width / 2), f32(window_size.y) - 100 }
 
     ball_velocity: f32 = 400
     ball_direction: [2]f32 = { 1, 0 }
@@ -269,28 +256,27 @@ main :: proc() {
         }
 
         // update game state
-        ball_pos := transmute([2]f32)ubo.ball.pos
-        paddle_middle := transmute([2]f32)ubo.paddle.pos
-        paddle_middle.x += ubo.paddle.size.width / 2
+        paddle_middle := ubo.paddle_pos
+        paddle_middle.x += ubo.paddle_size.width / 2
 
         if !playing && space_pressed {
             playing = true
-            ball_direction = linalg.normalize(paddle_middle - ball_pos)
+            ball_direction = linalg.normalize(paddle_middle - ubo.ball_pos)
         }
 
-        at_edge := !(ball_pos.x > ubo.ball.radius && ball_pos.x < f32(window_size.x) - ubo.ball.radius)
+        at_edge := !(ubo.ball_pos.x > ubo.ball_radius && ubo.ball_pos.x < f32(window_size.x) - ubo.ball_radius)
 
         if at_edge && !playing {
             ball_direction.x = -ball_direction.x
         }
 
         // update - collision (ball x paddle)
-        closest_x := clamp(ball_pos.x, ubo.paddle.pos.x, ubo.paddle.pos.x + ubo.paddle.size.width)
-        closest_y := clamp(ball_pos.y, ubo.paddle.pos.y, ubo.paddle.pos.y + ubo.paddle.size.width)
+        closest_x := clamp(ubo.ball_pos.x, ubo.paddle_pos.x, ubo.paddle_pos.x + ubo.paddle_size.width)
+        closest_y := clamp(ubo.ball_pos.y, ubo.paddle_pos.y, ubo.paddle_pos.y + ubo.paddle_size.width)
         closest_point: [2]f32 = { closest_x, closest_y }
-        distance := linalg.distance(ball_pos, closest_point)
+        distance := linalg.distance(ubo.ball_pos, closest_point)
 
-        if distance < ubo.ball.radius {
+        if distance < ubo.ball_radius {
             ball_direction.y = -ball_direction.y
         }
 
@@ -300,8 +286,7 @@ main :: proc() {
 
         // update - position
 
-        ball_pos += ball_direction * ball_velocity * delta_time
-        ubo.ball.pos = transmute(Position)ball_pos
+        ubo.ball_pos += ball_direction * ball_velocity * delta_time
 
         // render
         cmd_buf := sdl.AcquireGPUCommandBuffer(gpu)
