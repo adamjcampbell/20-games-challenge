@@ -2,24 +2,15 @@
 
 using namespace metal;
 
-struct Size {
-    float width;
-    float height;
-};
-
 struct Uniforms {
-    Size screen_size;
-
+    float2 screen_size;
     float2 ball_pos;
-
     float2 paddle_pos;
-    Size paddle_size;
-
+    float2 paddle_size;
     float2 bricks_pos;
-    Size bricks_size;
+    float2 bricks_size;
 
     float ball_radius;
-
     float bricks_line_width;
     float bricks_h_spacing;
 };
@@ -44,9 +35,9 @@ vertex VertexOut vertex_main(
 }
 
 // Checks the point is in rect by making a relative point and checking it is within bounds
-bool point_in_rect(float2 point, float2 top_left, Size size) {
+bool point_in_rect(float2 point, float2 top_left, float2 size) {
     float2 rel = point - top_left;
-    return all(rel >= 0.0) && all(rel < float2(size.width, size.height));
+    return all(rel >= 0.0) && all(rel < size);
 }
 
 fragment float4 fragment_main(
