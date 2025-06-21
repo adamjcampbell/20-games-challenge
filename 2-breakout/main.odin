@@ -229,6 +229,10 @@ main :: proc() {
     ball_velocity: f32 = 400
     ball_direction: [2]f32 = { 1, 0 }
 
+    // Initial paddle direction
+    paddle_speed := f32(400)
+    paddle_x_direction: f32
+
     playing := false
 
     current_time := sdl.GetTicks()
@@ -247,11 +251,14 @@ main :: proc() {
         ev: sdl.Event
         for sdl.PollEvent(&ev) {
             #partial switch ev.type {
-            case .QUIT:
-                break main_loop
+            case .QUIT: break main_loop
             case .KEY_DOWN:
-                if ev.key.scancode == .ESCAPE do break main_loop
-                if ev.key.scancode == .SPACE do space_pressed = true
+                #partial switch ev.key.scancode {
+                case .ESCAPE: break main_loop
+                case .SPACE: space_pressed = true
+                case .A: paddle_x_direction = -1
+                case .D: paddle_x_direction = 1
+                }
             }
         }
 
@@ -287,9 +294,10 @@ main :: proc() {
             ball_direction.x = -ball_direction.x
         }
 
-        // update - ball position
+        // update - positions
 
         ubo.ball_pos += ball_direction * ball_velocity * delta_time
+        ubo.paddle_pos.x += paddle_x_direction * paddle_speed * delta_time
 
         // render
         cmd_buf := sdl.AcquireGPUCommandBuffer(gpu)
