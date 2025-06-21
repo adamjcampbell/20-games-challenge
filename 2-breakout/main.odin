@@ -297,7 +297,8 @@ main :: proc() {
         // update - positions
 
         ubo.ball_pos += ball_direction * ball_velocity * delta_time
-        ubo.paddle_pos.x += paddle_x_direction * paddle_speed * delta_time
+        paddle_x_movement := paddle_x_direction * paddle_speed * delta_time
+        ubo.paddle_pos.x = clamp(ubo.paddle_pos.x + paddle_x_movement, 0, f32(window_size.x) - ubo.paddle_size.width)
 
         // render
         cmd_buf := sdl.AcquireGPUCommandBuffer(gpu)
