@@ -240,6 +240,9 @@ main :: proc() {
     last_time: u64
     delta_time: f32
 
+    num_keys: i32
+    keyboard_state := sdl.GetKeyboardState(&num_keys)
+
     main_loop: for {
         // calculate delta time
         last_time = current_time
@@ -250,8 +253,6 @@ main :: proc() {
         paddle_x_direction: f32
 
         // process events
-        space_pressed: bool
-
         ev: sdl.Event
         for sdl.PollEvent(&ev) {
             #partial switch ev.type {
@@ -259,14 +260,9 @@ main :: proc() {
             case .KEY_DOWN:
                 #partial switch ev.key.scancode {
                 case .ESCAPE: break main_loop
-                case .SPACE: space_pressed = true
-                case .A: go_left = true
-                case .D: go_right = true
                 }
             case .KEY_UP:
                 #partial switch ev.key.scancode {
-                case .A: go_left = false
-                case .D: go_right = false
                 }
             }
         }
@@ -275,7 +271,7 @@ main :: proc() {
         paddle_middle := ubo.paddle_pos
         paddle_middle.x += ubo.paddle_size.width / 2
 
-        if !playing && space_pressed {
+        if !playing && keyboard_state[sdl.Scancode.SPACE] {
             playing = true
             ball_direction = linalg.normalize(paddle_middle - ubo.ball_pos)
         }
@@ -305,15 +301,13 @@ main :: proc() {
 
         // update - paddle direction
 
-        if go_left {
+        if keyboard_state[sdl.Scancode.A] {
             paddle_x_direction -= 1
         }
 
-        if go_right {
+        if keyboard_state[sdl.Scancode.D] {
             paddle_x_direction += 1
         }
-
-        paddle_x_direction = clamp(paddle_x_direction, -1, 1)
 
         // update - positions
 
