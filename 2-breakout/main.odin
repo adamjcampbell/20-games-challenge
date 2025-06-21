@@ -231,9 +231,10 @@ main :: proc() {
 
     // Initial paddle direction
     paddle_speed := f32(400)
-    paddle_x_direction: f32
 
-    playing := false
+    playing: bool
+    go_left: bool
+    go_right: bool
 
     current_time := sdl.GetTicks()
     last_time: u64
@@ -244,6 +245,9 @@ main :: proc() {
         last_time = current_time
         current_time = sdl.GetTicks()
         delta_time = f32(current_time - last_time) / 1000
+
+        // Initial x direction
+        paddle_x_direction: f32
 
         // process events
         space_pressed: bool
@@ -256,8 +260,13 @@ main :: proc() {
                 #partial switch ev.key.scancode {
                 case .ESCAPE: break main_loop
                 case .SPACE: space_pressed = true
-                case .A: paddle_x_direction = -1
-                case .D: paddle_x_direction = 1
+                case .A: go_left = true
+                case .D: go_right = true
+                }
+            case .KEY_UP:
+                #partial switch ev.key.scancode {
+                case .A: go_left = false
+                case .D: go_right = false
                 }
             }
         }
@@ -293,6 +302,18 @@ main :: proc() {
         if at_edge && playing {
             ball_direction.x = -ball_direction.x
         }
+
+        // update - paddle direction
+
+        if go_left {
+            paddle_x_direction -= 1
+        }
+
+        if go_right {
+            paddle_x_direction += 1
+        }
+
+        paddle_x_direction = clamp(paddle_x_direction, -1, 1)
 
         // update - positions
 
